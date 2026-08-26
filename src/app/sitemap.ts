@@ -12,7 +12,6 @@ const routes = [
   "/database",
   "/map",
   "/about",
-  "/subscribe",
 ] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -22,6 +21,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     url: `${siteUrl}${path === "/" ? "" : path}`,
     lastModified,
     changeFrequency: path === "/" ? "daily" : "weekly",
-    priority: path === "/" ? 1 : path === "/subscribe" ? 0.4 : 0.8,
+    priority: path === "/" ? 1 : 0.8,
   }));
 }

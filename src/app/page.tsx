@@ -2,7 +2,6 @@ import { FeaturedHero } from "@/components/FeaturedHero";
 import { HomeSidebar } from "@/components/HomeSidebar";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ArticleCard, EntityCard } from "@/components/Cards";
-import { Newsletter } from "@/components/Newsletter";
 import {
   featuredSlides,
   latestNews,
@@ -63,7 +62,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <Newsletter />
     </>
   );
 }

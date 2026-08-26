@@ -58,12 +58,6 @@ export function Header() {
                 </kbd>
               </div>
             </button>
-            <Link
-              href="/subscribe"
-              className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-hover"
-            >
-              Subscribe
-            </Link>
           </div>
 
           {open && (
