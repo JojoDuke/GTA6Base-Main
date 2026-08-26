@@ -30,6 +30,10 @@ export const metadata: Metadata = {
   description:
     "The GTA 6 database and blog — characters, vehicles, locations, news, and leaks in one place.",
   metadataBase: new URL("https://gta6base.io"),
+  icons: {
+    icon: "/IVBase.png",
+    apple: "/IVBase.png",
+  },
 };
 
 export default function RootLayout({
