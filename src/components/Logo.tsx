@@ -9,11 +9,11 @@ export function Logo({ className = "" }: { className?: string }) {
       aria-label="GTA6Base home"
     >
       <Image
-        src="/IVBase.png"
-        alt="IV Base"
-        width={48}
-        height={48}
-        className="h-10 w-10 object-contain md:h-12 md:w-12"
+        src="/logos/VIBase.png"
+        alt="VI Base"
+        width={120}
+        height={80}
+        className="h-10 w-auto object-contain md:h-12"
         priority
       />
     </Link>
