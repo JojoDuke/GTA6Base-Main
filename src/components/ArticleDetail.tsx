@@ -1,0 +1,81 @@
+import Link from "next/link";
+import { ArticleCard } from "@/components/Cards";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { SectionHeader } from "@/components/SectionHeader";
+import type { Article } from "@/lib/data";
+import { getRelatedArticles } from "@/lib/data";
+
+export function ArticleDetail({ article }: { article: Article }) {
+  const related = getRelatedArticles(article);
+
+  return (
+    <article className="mx-auto max-w-[1450px] px-4 py-8 lg:px-24">
+      <div className="mx-auto max-w-3xl">
+        <Breadcrumbs
+          items={[
+            { href: "/news", label: "News" },
+            { label: article.title },
+          ]}
+        />
+
+        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+            {article.category}
+          </span>
+          {article.tag ? (
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-semibold text-foreground">
+              {article.tag}
+            </span>
+          ) : null}
+          <time>{article.date}</time>
+        </div>
+
+        <h1 className="font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+          {article.title}
+        </h1>
+        <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
+          {article.excerpt}
+        </p>
+      </div>
+
+      <div
+        className="mx-auto mt-8 aspect-[16/9] max-w-4xl overflow-hidden rounded-lg bg-cover bg-center"
+        style={{ backgroundImage: article.image }}
+        role="img"
+        aria-label={article.imageAlt}
+      />
+
+      <div className="mx-auto mt-8 max-w-3xl space-y-5 text-base leading-8 text-foreground">
+        {(article.body ?? []).map((paragraph) => (
+          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
+        ))}
+      </div>
+
+      <div className="mx-auto mt-10 max-w-3xl border-t border-border pt-6 text-sm text-muted-foreground">
+        <p>
+          Unofficial fan coverage on{" "}
+          <Link href="/" className="font-semibold text-primary hover:text-primary-hover">
+            GTA6Base
+          </Link>
+          . Not affiliated with Rockstar Games or Take-Two Interactive.
+        </p>
+        <p className="mt-2">
+          <Link href="/news" className="hover:text-primary">
+            ← Back to News
+          </Link>
+        </p>
+      </div>
+
+      {related.length > 0 ? (
+        <section className="mx-auto mt-14 max-w-[1450px]">
+          <SectionHeader title="Related" href="/news" />
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {related.map((item) => (
+              <ArticleCard key={item.id} article={item} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </article>
+  );
+}

@@ -8,6 +8,7 @@ export type Article = {
   image: string;
   imageAlt: string;
   tag?: string;
+  body?: string[];
 };
 
 export type Entity = {
@@ -36,6 +37,24 @@ export const utilityLinks = [
 
 export const featuredSlides: Article[] = [
   {
+    id: "0",
+    slug: "gta-6-extended-look-netflix-august-27",
+    title: "GTA 6 Extended Look Trailer Releases on Netflix on August 27th",
+    excerpt:
+      "Rockstar's extended look at Grand Theft Auto VI premieres for Netflix subscribers at 3 p.m. ET on August 27.",
+    category: "News",
+    date: "Aug 27, 2026",
+    image: "url('/gta6net.jpg')",
+    imageAlt:
+      "Lucia and Jason featured in artwork for the GTA 6 extended look",
+    tag: "Featured",
+    body: [
+      "Rockstar Games and Netflix have announced that Grand Theft Auto VI: An Extended Look will premiere globally for Netflix subscribers on August 27 at 3 p.m. ET.",
+      "According to Netflix, the presentation was captured entirely from in-game footage on PlayStation 5 and will offer a closer look at the next entry in the Grand Theft Auto series.",
+      "The extended look will be available with subtitles in multiple languages. Grand Theft Auto VI is currently scheduled to launch on PlayStation 5 and Xbox Series X|S on November 19, 2026.",
+    ],
+  },
+  {
     id: "1",
     slug: "gta-6-trailer-2-everything-we-spotted",
     title: "GTA 6 Trailer 2: Everything We Spotted in Leonida",
@@ -60,19 +79,6 @@ export const featuredSlides: Article[] = [
       "linear-gradient(135deg, #0f172a 0%, #7c3aed 40%, #f97316 100%)",
     imageAlt: "Character silhouette concept",
     tag: "Deep Dive",
-  },
-  {
-    id: "3",
-    slug: "release-window-autumn-2026",
-    title: "Release Window Watch: Autumn 2026 Still Holding?",
-    excerpt:
-      "Platform targets, delay chatter, and what Rockstar’s silence usually means this close to launch.",
-    category: "News",
-    date: "Mar 1, 2026",
-    image:
-      "linear-gradient(135deg, #042f2e 0%, #14b8a6 50%, #fbbf24 100%)",
-    imageAlt: "Countdown graphic concept",
-    tag: "Timeline",
   },
 ];
 
@@ -318,3 +324,21 @@ export const leaks: Article[] = [
     imageAlt: "Crowd abstract",
   },
 ];
+
+export function getNewsArticles(): Article[] {
+  const bySlug = new Map<string, Article>();
+  for (const article of [...featuredSlides, ...latestNews]) {
+    bySlug.set(article.slug, article);
+  }
+  return [...bySlug.values()];
+}
+
+export function getArticleBySlug(slug: string): Article | undefined {
+  return getNewsArticles().find((article) => article.slug === slug);
+}
+
+export function getRelatedArticles(article: Article, limit = 3): Article[] {
+  return getNewsArticles()
+    .filter((item) => item.slug !== article.slug)
+    .slice(0, limit);
+}
