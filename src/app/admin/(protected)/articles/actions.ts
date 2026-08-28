@@ -1,14 +1,31 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/cms/auth";
-import type { ArticleFormState, ArticleStatus } from "@/lib/cms/types";
 import {
-  articleFormSchema,
-  paragraphsFromText,
-} from "@/lib/cms/validation";
+  ARTICLE_IMAGE_BUCKET,
+  articleImageExtensions,
+  getArticleImageUrl,
+  MAX_ARTICLE_IMAGE_BYTES,
+} from "@/lib/cms/images";
+import { parseArticleBody } from "@/lib/cms/rich-text";
+import type { ArticleFormState, ArticleStatus } from "@/lib/cms/types";
+import { articleFormSchema } from "@/lib/cms/validation";
 import { createClient } from "@/lib/supabase/server";
+
+function revalidatePublicContent(slug?: string | null) {
+  revalidatePath("/");
+  revalidatePath("/news");
+  revalidatePath("/news/[slug]", "page");
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/admin", "layout");
+
+  if (slug) {
+    revalidatePath(`/news/${slug}`);
+  }
+}
 
 function databaseError(message: string): ArticleFormState {
   if (message.includes("articles_slug_key")) {
@@ -31,9 +48,26 @@ export async function saveArticle(
   _previousState: ArticleFormState,
   formData: FormData,
 ): Promise<ArticleFormState> {
-  await requireAdmin();
+  const user = await requireAdmin();
   const supabase = await createClient();
   const intent = String(formData.get("intent") ?? "");
+  let existingImagePath: string | null = null;
+  let existingSlug: string | null = null;
+
+  if (articleId) {
+    const { data: existingArticle, error } = await supabase
+      .from("articles")
+      .select("image_path, slug")
+      .eq("id", articleId)
+      .maybeSingle();
+
+    if (error || !existingArticle) {
+      return { error: "Could not find this article." };
+    }
+
+    existingImagePath = existingArticle.image_path;
+    existingSlug = existingArticle.slug;
+  }
 
   if (intent === "delete") {
     if (!articleId) {
@@ -46,7 +80,13 @@ export async function saveArticle(
       return { error: "Could not delete the article. Please try again." };
     }
 
-    revalidatePath("/admin", "layout");
+    if (existingImagePath) {
+      await supabase.storage
+        .from(ARTICLE_IMAGE_BUCKET)
+        .remove([existingImagePath]);
+    }
+
+    revalidatePublicContent(existingSlug);
     redirect("/admin");
   }
 
@@ -61,6 +101,7 @@ export async function saveArticle(
     category: formData.get("category"),
     tag: formData.get("tag"),
     body: formData.get("body"),
+    imageAlt: formData.get("imageAlt"),
     publishedAt: formData.get("publishedAt"),
     featuredOrder: formData.get("featuredOrder"),
   });
@@ -73,14 +114,81 @@ export async function saveArticle(
   }
 
   const values = result.data;
+  const body = parseArticleBody(values.body);
+
+  if (!body) {
+    return {
+      error: "Add article content.",
+      fieldErrors: { body: ["Write at least one paragraph, heading, or image."] },
+    };
+  }
+
   const status = intent as ArticleStatus;
+  const imageFile = formData.get("image");
+  const hasNewImage = imageFile instanceof File && imageFile.size > 0;
+  const removeImage = formData.get("removeImage") === "true";
+  const willHaveImage =
+    hasNewImage || (Boolean(existingImagePath) && !removeImage);
+
+  if (willHaveImage && !values.imageAlt) {
+    return {
+      error: "Add alternative text for the featured image.",
+      fieldErrors: {
+        imageAlt: ["Describe the image for readers using screen readers."],
+      },
+    };
+  }
+
+  let nextImagePath = removeImage ? null : existingImagePath;
+  let uploadedImagePath: string | null = null;
+
+  if (hasNewImage) {
+    const extension = articleImageExtensions[imageFile.type];
+
+    if (!extension) {
+      return {
+        error: "Choose a supported image.",
+        fieldErrors: {
+          image: ["Use a JPEG, PNG, WebP, or AVIF image."],
+        },
+      };
+    }
+
+    if (imageFile.size > MAX_ARTICLE_IMAGE_BYTES) {
+      return {
+        error: "The selected image is too large.",
+        fieldErrors: { image: ["Images must be 5 MB or smaller."] },
+      };
+    }
+
+    uploadedImagePath = `${user.id}/${randomUUID()}.${extension}`;
+    const { error: uploadError } = await supabase.storage
+      .from(ARTICLE_IMAGE_BUCKET)
+      .upload(uploadedImagePath, await imageFile.arrayBuffer(), {
+        cacheControl: "31536000",
+        contentType: imageFile.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return {
+        error: "Could not upload the featured image.",
+        fieldErrors: { image: [uploadError.message] },
+      };
+    }
+
+    nextImagePath = uploadedImagePath;
+  }
+
   const article = {
     title: values.title,
     slug: values.slug,
     excerpt: values.excerpt,
     category: values.category,
     tag: values.tag || null,
-    body: paragraphsFromText(values.body),
+    body,
+    image_path: nextImagePath,
+    image_alt: nextImagePath ? values.imageAlt : "",
     status,
     published_at: values.publishedAt
       ? `${values.publishedAt}T12:00:00.000Z`
@@ -98,9 +206,70 @@ export async function saveArticle(
   const { error } = await query;
 
   if (error) {
+    if (uploadedImagePath) {
+      await supabase.storage
+        .from(ARTICLE_IMAGE_BUCKET)
+        .remove([uploadedImagePath]);
+    }
+
     return databaseError(error.message);
   }
 
-  revalidatePath("/admin", "layout");
+  if (
+    existingImagePath &&
+    existingImagePath !== nextImagePath
+  ) {
+    await supabase.storage
+      .from(ARTICLE_IMAGE_BUCKET)
+      .remove([existingImagePath]);
+  }
+
+  revalidatePublicContent(values.slug);
+
+  if (existingSlug && existingSlug !== values.slug) {
+    revalidatePath(`/news/${existingSlug}`);
+  }
+
   redirect("/admin");
+}
+
+export async function uploadInlineImage(formData: FormData) {
+  const user = await requireAdmin();
+  const supabase = await createClient();
+  const imageFile = formData.get("image");
+
+  if (!(imageFile instanceof File) || imageFile.size === 0) {
+    return { ok: false as const, error: "Choose an image to insert." };
+  }
+
+  const extension = articleImageExtensions[imageFile.type];
+
+  if (!extension) {
+    return { ok: false as const, error: "Use a JPEG, PNG, WebP, or AVIF image." };
+  }
+
+  if (imageFile.size > MAX_ARTICLE_IMAGE_BYTES) {
+    return { ok: false as const, error: "Images must be 5 MB or smaller." };
+  }
+
+  const path = `${user.id}/inline/${randomUUID()}.${extension}`;
+  const { error } = await supabase.storage
+    .from(ARTICLE_IMAGE_BUCKET)
+    .upload(path, await imageFile.arrayBuffer(), {
+      cacheControl: "31536000",
+      contentType: imageFile.type,
+      upsert: false,
+    });
+
+  if (error) {
+    return { ok: false as const, error: "Could not upload the image." };
+  }
+
+  const url = getArticleImageUrl(path);
+
+  if (!url) {
+    return { ok: false as const, error: "Could not create the image URL." };
+  }
+
+  return { ok: true as const, url };
 }

@@ -9,11 +9,19 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    if (slides.length < 2) return;
+
     const id = window.setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 6500);
     return () => window.clearInterval(id);
   }, [slides.length]);
+
+  if (!slides.length) {
+    return null;
+  }
+
+  const activeIndex = index % slides.length;
 
   return (
     <div className="relative mb-4 aspect-[1.91/1] h-auto w-full overflow-hidden sm:aspect-[40/21] sm:h-[414px] min-[1200px]:mb-0 min-[1200px]:w-[800px] lg:rounded-md">
@@ -22,12 +30,12 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
           key={item.id}
           href={`/news/${item.slug}`}
           className={`group absolute inset-0 transition-opacity duration-700 ${
-            i === index
+            i === activeIndex
               ? "pointer-events-auto opacity-100"
               : "pointer-events-none opacity-0"
           }`}
-          aria-hidden={i !== index}
-          tabIndex={i === index ? 0 : -1}
+          aria-hidden={i !== activeIndex}
+          tabIndex={i === activeIndex ? 0 : -1}
           aria-label={`Read ${item.title}`}
         >
           <div
@@ -90,7 +98,7 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
             type="button"
             aria-label={`Go to slide ${i + 1}`}
             className={`h-1.5 cursor-pointer rounded-full transition-all hover:bg-white ${
-              i === index ? "w-6 bg-white" : "w-1.5 bg-white/50"
+              i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/50"
             }`}
             onClick={() => setIndex(i)}
           />

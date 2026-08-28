@@ -14,7 +14,8 @@ export const articleFormSchema = z.object({
   excerpt: z.string().trim().min(1, "Add an excerpt.").max(320),
   category: z.enum(["News", "Character", "Vehicle", "Location"]),
   tag: z.string().trim().max(60),
-  body: z.string().trim().min(1, "Add at least one paragraph."),
+  body: z.string().min(1, "Add article content."),
+  imageAlt: z.string().trim().max(180),
   publishedAt: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a valid publication date.")
@@ -22,9 +23,3 @@ export const articleFormSchema = z.object({
   featuredOrder: z.enum(["", "1", "2", "3"]),
 });
 
-export function paragraphsFromText(body: string) {
-  return body
-    .split(/\r?\n\s*\r?\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean);
-}

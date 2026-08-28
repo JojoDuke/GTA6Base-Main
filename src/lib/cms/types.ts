@@ -1,3 +1,5 @@
+import type { ArticleBody } from "@/lib/data";
+
 export type ArticleStatus = "draft" | "published";
 export type ArticleCategory = "News" | "Character" | "Vehicle" | "Location";
 
@@ -8,7 +10,7 @@ export type ArticleRow = {
   excerpt: string;
   category: ArticleCategory;
   tag: string | null;
-  body: string[];
+  body: ArticleBody;
   image_path: string | null;
   image_alt: string;
   status: ArticleStatus;
@@ -28,6 +30,8 @@ export type ArticleFormState = {
       | "category"
       | "tag"
       | "body"
+      | "image"
+      | "imageAlt"
       | "publishedAt"
       | "featuredOrder",
       string[]

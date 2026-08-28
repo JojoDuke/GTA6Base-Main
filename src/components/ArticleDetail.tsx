@@ -2,11 +2,18 @@ import Link from "next/link";
 import { ArticleCard } from "@/components/Cards";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SectionHeader } from "@/components/SectionHeader";
+import { RichTextContent } from "@/components/RichTextContent";
 import type { Article } from "@/lib/data";
 import { getRelatedArticles } from "@/lib/data";
 
-export function ArticleDetail({ article }: { article: Article }) {
-  const related = getRelatedArticles(article);
+export function ArticleDetail({
+  article,
+  related,
+}: {
+  article: Article;
+  related?: Article[];
+}) {
+  const relatedArticles = related ?? getRelatedArticles(article);
 
   return (
     <article className="mx-auto max-w-[1450px] px-4 py-8 lg:px-24">
@@ -45,10 +52,8 @@ export function ArticleDetail({ article }: { article: Article }) {
         aria-label={article.imageAlt}
       />
 
-      <div className="mx-auto mt-8 max-w-3xl space-y-5 text-base leading-8 text-foreground">
-        {(article.body ?? []).map((paragraph) => (
-          <p key={paragraph.slice(0, 24)}>{paragraph}</p>
-        ))}
+      <div className="mx-auto mt-8 max-w-3xl">
+        <RichTextContent body={article.body} />
       </div>
 
       <div className="mx-auto mt-10 max-w-3xl border-t border-border pt-6 text-sm text-muted-foreground">
@@ -66,11 +71,11 @@ export function ArticleDetail({ article }: { article: Article }) {
         </p>
       </div>
 
-      {related.length > 0 ? (
+      {relatedArticles.length > 0 ? (
         <section className="mx-auto mt-14 max-w-[1450px]">
           <SectionHeader title="Related" href="/news" />
           <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {related.map((item) => (
+            {relatedArticles.map((item) => (
               <ArticleCard key={item.id} article={item} />
             ))}
           </div>

@@ -1,3 +1,10 @@
+export type RichTextDocument = {
+  type: "doc";
+  content?: unknown[];
+};
+
+export type ArticleBody = string[] | RichTextDocument;
+
 export type Article = {
   id: string;
   slug: string;
@@ -8,7 +15,7 @@ export type Article = {
   image: string;
   imageAlt: string;
   tag?: string;
-  body?: string[];
+  body?: ArticleBody;
 };
 
 export type Entity = {

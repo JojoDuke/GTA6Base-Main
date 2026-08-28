@@ -1,8 +1,19 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { CalendarDays, FileText, Save, Send, Trash2 } from "lucide-react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import {
+  CalendarDays,
+  FileImage,
+  FileText,
+  Save,
+  Send,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
 import { saveArticle } from "@/app/admin/(protected)/articles/actions";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
+import { getArticleImageUrl } from "@/lib/cms/images";
 import {
   initialArticleFormState,
   type ArticleRow,
@@ -37,6 +48,20 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
   const [title, setTitle] = useState(article?.title ?? "");
   const [slug, setSlug] = useState(article?.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(article));
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    getArticleImageUrl(article?.image_path ?? null),
+  );
+  const [removeImage, setRemoveImage] = useState(false);
+  const imageInput = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   return (
     <form action={formAction}>
@@ -48,6 +73,12 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
           {state.error}
         </div>
       ) : null}
+
+      <input
+        type="hidden"
+        name="removeImage"
+        value={removeImage ? "true" : "false"}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
@@ -131,29 +162,129 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
 
           <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
             <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-600">
+                <FileImage className="h-4 w-4" />
+              </span>
+              <div>
+                <h2 className="text-sm font-bold text-foreground">
+                  Featured image
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  JPEG, PNG, WebP, or AVIF up to 5 MB.
+                </p>
+              </div>
+            </div>
+
+            <input
+              ref={imageInput}
+              id="featured-image"
+              type="file"
+              name="image"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              className="sr-only"
+              onChange={(event) => {
+                const file = event.target.files?.[0] ?? null;
+                setSelectedImage(file);
+                setRemoveImage(false);
+                setImagePreview(file ? URL.createObjectURL(file) : null);
+              }}
+            />
+
+            {imagePreview ? (
+              <div className="mt-6">
+                <div
+                  role="img"
+                  aria-label="Featured image preview"
+                  className="group relative aspect-video overflow-hidden rounded-2xl bg-slate-100 bg-cover bg-center"
+                  style={{ backgroundImage: `url("${imagePreview}")` }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 opacity-80 transition-opacity group-hover:opacity-100" />
+                  <button
+                    type="button"
+                    aria-label="Remove featured image"
+                    onClick={() => {
+                      setSelectedImage(null);
+                      setImagePreview(null);
+                      setRemoveImage(true);
+                      if (imageInput.current) imageInput.current.value = "";
+                    }}
+                    className="absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-black/50 text-white backdrop-blur transition-colors hover:bg-accent"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                  <label
+                    htmlFor="featured-image"
+                    className="absolute bottom-3 left-3 inline-flex cursor-pointer items-center gap-2 rounded-xl bg-white px-3 py-2 text-xs font-bold text-foreground transition-colors hover:bg-slate-100"
+                  >
+                    <Upload className="h-3.5 w-3.5 text-primary" />
+                    Replace image
+                  </label>
+                  {selectedImage ? (
+                    <span className="absolute bottom-4 right-3 max-w-[45%] truncate text-xs font-medium text-white/80">
+                      {selectedImage.name}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ) : (
+              <label
+                htmlFor="featured-image"
+                className="group mt-6 flex aspect-[2.4/1] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 text-center transition-colors hover:border-primary/40 hover:bg-primary/[0.03]"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-400 shadow-sm transition-colors group-hover:text-primary">
+                  <Upload className="h-5 w-5" />
+                </span>
+                <span className="mt-3 text-sm font-bold text-foreground">
+                  Choose an image
+                </span>
+                <span className="mt-1 text-xs text-muted-foreground">
+                  Click to browse your files
+                </span>
+              </label>
+            )}
+            <FieldError errors={state.fieldErrors?.image} />
+
+            {imagePreview ? (
+              <label className="group mt-5 block">
+                <span className="text-sm font-semibold text-foreground transition-colors group-focus-within:text-primary">
+                  Alternative text
+                </span>
+                <input
+                  name="imageAlt"
+                  defaultValue={article?.image_alt ?? ""}
+                  maxLength={180}
+                  required
+                  placeholder="Describe what appears in the image"
+                  className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Keep it concise and useful for screen-reader users.
+                </p>
+                <FieldError errors={state.fieldErrors?.imageAlt} />
+              </label>
+            ) : (
+              <input type="hidden" name="imageAlt" value="" />
+            )}
+          </section>
+
+          <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-7">
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-5">
               <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
                 <FileText className="h-4 w-4" />
               </span>
               <div>
                 <h2 className="text-sm font-bold text-foreground">Story body</h2>
                 <p className="text-xs text-muted-foreground">
-                  Separate paragraphs with a blank line.
+                  Headings, lists, links, and inline images.
                 </p>
               </div>
             </div>
 
-            <label className="mt-6 block">
+            <div className="mt-6">
               <span className="sr-only">Article body</span>
-              <textarea
-                name="body"
-                defaultValue={article?.body.join("\n\n") ?? ""}
-                rows={16}
-                required
-                placeholder={"Write your article here.\n\nStart a new paragraph after a blank line."}
-                className="w-full resize-y rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-[15px] leading-7 outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
-              />
+              <RichTextEditor initialContent={article?.body} />
               <FieldError errors={state.fieldErrors?.body} />
-            </label>
+            </div>
           </section>
         </div>
 
