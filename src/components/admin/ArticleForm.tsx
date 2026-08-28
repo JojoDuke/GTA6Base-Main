@@ -7,11 +7,15 @@ import {
   FileText,
   Save,
   Send,
+  Sparkles,
   Trash2,
   Upload,
   X,
 } from "lucide-react";
-import { saveArticle } from "@/app/admin/(protected)/articles/actions";
+import {
+  generateExcerpt,
+  saveArticle,
+} from "@/app/admin/(protected)/articles/actions";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import { getArticleImageUrl } from "@/lib/cms/images";
 import {
@@ -48,12 +52,37 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
   const [title, setTitle] = useState(article?.title ?? "");
   const [slug, setSlug] = useState(article?.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(article));
+  const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
+  const [generatingExcerpt, setGeneratingExcerpt] = useState(false);
+  const [excerptError, setExcerptError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(
     getArticleImageUrl(article?.image_path ?? null),
   );
   const [removeImage, setRemoveImage] = useState(false);
   const imageInput = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  async function handleGenerateExcerpt() {
+    setGeneratingExcerpt(true);
+    setExcerptError(null);
+
+    const bodyField = formRef.current?.elements.namedItem("body");
+    const body = bodyField instanceof HTMLInputElement ? bodyField.value : "";
+    try {
+      const result = await generateExcerpt({ title, body });
+
+      if (!result.ok) {
+        setExcerptError(result.error);
+      } else {
+        setExcerpt(result.excerpt);
+      }
+    } catch {
+      setExcerptError("Could not generate an excerpt. Try again.");
+    } finally {
+      setGeneratingExcerpt(false);
+    }
+  }
 
   useEffect(() => {
     return () => {
@@ -64,7 +93,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
   }, [imagePreview]);
 
   return (
-    <form action={formAction}>
+    <form ref={formRef} action={formAction}>
       {state.error ? (
         <div
           role="alert"
@@ -142,21 +171,39 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                 <FieldError errors={state.fieldErrors?.slug} />
               </label>
 
-              <label className="group block">
-                <span className="text-sm font-semibold text-foreground transition-colors group-focus-within:text-primary">
-                  Excerpt
-                </span>
+              <div className="group">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-foreground transition-colors group-focus-within:text-primary">
+                    Excerpt
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleGenerateExcerpt}
+                    disabled={generatingExcerpt || pending}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold text-primary transition-colors hover:bg-primary/10 hover:text-primary-hover disabled:cursor-wait disabled:opacity-60"
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {generatingExcerpt ? "Generating…" : "Generate with AI"}
+                  </button>
+                </div>
                 <textarea
                   name="excerpt"
-                  defaultValue={article?.excerpt ?? ""}
+                  value={excerpt}
+                  onChange={(event) => setExcerpt(event.target.value)}
                   maxLength={320}
                   rows={3}
                   required
                   placeholder="A short summary for article cards and search results"
                   className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
                 />
-                <FieldError errors={state.fieldErrors?.excerpt} />
-              </label>
+                <FieldError
+                  errors={
+                    excerptError
+                      ? [excerptError]
+                      : state.fieldErrors?.excerpt
+                  }
+                />
+              </div>
             </div>
           </section>
 

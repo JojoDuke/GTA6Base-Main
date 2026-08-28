@@ -88,3 +88,22 @@ export function parseArticleBody(raw: string): JSONContent | null {
     return null;
   }
 }
+
+export function documentToPlainText(doc: JSONContent): string {
+  const parts: string[] = [];
+
+  const visit = (node: JSONContent) => {
+    if (typeof node.text === "string") {
+      parts.push(node.text);
+    }
+
+    node.content?.forEach(visit);
+
+    if (node.type === "paragraph" || node.type === "heading") {
+      parts.push("\n");
+    }
+  };
+
+  visit(doc);
+  return parts.join("").replace(/\n{3,}/g, "\n\n").trim();
+}

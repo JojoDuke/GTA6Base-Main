@@ -10,7 +10,7 @@ import {
   getArticleImageUrl,
   MAX_ARTICLE_IMAGE_BYTES,
 } from "@/lib/cms/images";
-import { parseArticleBody } from "@/lib/cms/rich-text";
+import { documentToPlainText, isRichDocument, parseArticleBody } from "@/lib/cms/rich-text";
 import type { ArticleFormState, ArticleStatus } from "@/lib/cms/types";
 import { articleFormSchema } from "@/lib/cms/validation";
 import { createClient } from "@/lib/supabase/server";
@@ -272,4 +272,97 @@ export async function uploadInlineImage(formData: FormData) {
   }
 
   return { ok: true as const, url };
+}
+
+const EXCERPT_MAX_LENGTH = 320;
+
+function bodyTextFromInput(raw: string) {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (isRichDocument(parsed)) {
+      return documentToPlainText(parsed);
+    }
+  } catch {
+    // Plain text fallback if the editor has not saved JSON yet.
+  }
+
+  return raw.trim();
+}
+
+export async function generateExcerpt(input: { title: string; body: string }) {
+  await requireAdmin();
+
+  const title = input.title.trim();
+  const body = bodyTextFromInput(input.body);
+
+  if (!title && !body) {
+    return {
+      ok: false as const,
+      error: "Add a title or some article text first.",
+    };
+  }
+
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    return {
+      ok: false as const,
+      error: "Add OPENAI_API_KEY to generate excerpts.",
+    };
+  }
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0.4,
+        max_tokens: 120,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You write short excerpts for GTA6Base, an unofficial Grand Theft Auto VI news site. Return only the excerpt. One or two sentences, no quotes, no preamble, max 320 characters.",
+          },
+          {
+            role: "user",
+            content: `Title: ${title || "(untitled)"}\n\nArticle:\n${body.slice(0, 4000) || "(no body yet)"}`,
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      return {
+        ok: false as const,
+        error: "Could not generate an excerpt. Try again.",
+      };
+    }
+
+    const payload = (await response.json()) as {
+      choices?: Array<{ message?: { content?: string } }>;
+    };
+    const excerpt = payload.choices?.[0]?.message?.content
+      ?.trim()
+      .replace(/^["']|["']$/g, "")
+      .slice(0, EXCERPT_MAX_LENGTH);
+
+    if (!excerpt) {
+      return {
+        ok: false as const,
+        error: "The AI returned an empty excerpt.",
+      };
+    }
+
+    return { ok: true as const, excerpt };
+  } catch {
+    return {
+      ok: false as const,
+      error: "Could not generate an excerpt. Try again.",
+    };
+  }
 }
