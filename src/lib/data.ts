@@ -14,6 +14,7 @@ export type Article = {
   date: string;
   image: string;
   imageAlt: string;
+  imageCredit?: string;
   tag?: string;
   body?: ArticleBody;
 };
@@ -54,6 +55,7 @@ export const featuredSlides: Article[] = [
     image: "url('/gta6net.jpg')",
     imageAlt:
       "Lucia and Jason featured in artwork for the GTA 6 extended look",
+    imageCredit: "Image credit: Rockstar Games / Netflix",
     tag: "Featured",
     body: [
       "Rockstar Games and Netflix have announced that Grand Theft Auto VI: An Extended Look will premiere globally for Netflix subscribers on August 27 at 3 p.m. ET.",
@@ -72,6 +74,7 @@ export const featuredSlides: Article[] = [
     image:
       "linear-gradient(135deg, #1a0a2e 0%, #ff2d6a 45%, #1896fe 100%)",
     imageAlt: "Neon Vice City skyline concept",
+    imageCredit: "Source: Rockstar Games",
     tag: "Featured",
   },
   {
@@ -85,6 +88,7 @@ export const featuredSlides: Article[] = [
     image:
       "linear-gradient(135deg, #0f172a 0%, #7c3aed 40%, #f97316 100%)",
     imageAlt: "Character silhouette concept",
+    imageCredit: "Image credit: Rockstar Games",
     tag: "Deep Dive",
   },
 ];
@@ -138,6 +142,7 @@ export const latestNews: Article[] = [
     date: "Mar 11, 2026",
     image: "linear-gradient(135deg, #111827, #1896fe)",
     imageAlt: "Abstract network graphic",
+    imageCredit: "Image credit: Rockstar Games",
   },
   {
     id: "n2",
@@ -148,6 +153,7 @@ export const latestNews: Article[] = [
     date: "Mar 10, 2026",
     image: "linear-gradient(135deg, #1e293b, #6366f1)",
     imageAlt: "Console silhouette",
+    imageCredit: "Image credit: Rockstar Games",
   },
   {
     id: "n3",
@@ -158,6 +164,7 @@ export const latestNews: Article[] = [
     date: "Mar 9, 2026",
     image: "linear-gradient(135deg, #134e4a, #f59e0b)",
     imageAlt: "Coastal landscape",
+    imageCredit: "Image credit: Rockstar Games",
   },
   {
     id: "n4",
@@ -168,6 +175,7 @@ export const latestNews: Article[] = [
     date: "Mar 7, 2026",
     image: "linear-gradient(135deg, #312e81, #22d3ee)",
     imageAlt: "Finance chart abstract",
+    imageCredit: "Image credit: Rockstar Games",
   },
 ];
 
@@ -298,6 +306,7 @@ export const leaks: Article[] = [
     date: "Mar 6, 2026",
     image: "linear-gradient(135deg, #450a0a, #f87171)",
     imageAlt: "Map abstract",
+    imageCredit: "Image credit: Rockstar Games",
     tag: "Verified context",
   },
   {
@@ -309,6 +318,7 @@ export const leaks: Article[] = [
     date: "Mar 4, 2026",
     image: "linear-gradient(135deg, #365314, #bef264)",
     imageAlt: "Wildlife abstract",
+    imageCredit: "Image credit: Rockstar Games",
   },
   {
     id: "lk3",
@@ -319,6 +329,7 @@ export const leaks: Article[] = [
     date: "Feb 28, 2026",
     image: "linear-gradient(135deg, #1e3a8a, #93c5fd)",
     imageAlt: "Siren lights abstract",
+    imageCredit: "Image credit: Rockstar Games",
   },
   {
     id: "lk4",
@@ -329,6 +340,7 @@ export const leaks: Article[] = [
     date: "Feb 22, 2026",
     image: "linear-gradient(135deg, #4c1d95, #e9d5ff)",
     imageAlt: "Crowd abstract",
+    imageCredit: "Image credit: Rockstar Games",
   },
 ];
 

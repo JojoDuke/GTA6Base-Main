@@ -16,6 +16,7 @@ export const articleFormSchema = z.object({
   tag: z.string().trim().max(60),
   body: z.string().min(1, "Add article content."),
   imageAlt: z.string().trim().max(180),
+  imageCredit: z.string().trim().max(180),
   publishedAt: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a valid publication date.")

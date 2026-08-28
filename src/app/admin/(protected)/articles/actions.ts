@@ -102,6 +102,7 @@ export async function saveArticle(
     tag: formData.get("tag"),
     body: formData.get("body"),
     imageAlt: formData.get("imageAlt"),
+    imageCredit: formData.get("imageCredit"),
     publishedAt: formData.get("publishedAt"),
     featuredOrder: formData.get("featuredOrder"),
   });
@@ -135,6 +136,15 @@ export async function saveArticle(
       error: "Add alternative text for the featured image.",
       fieldErrors: {
         imageAlt: ["Describe the image for readers using screen readers."],
+      },
+    };
+  }
+
+  if (willHaveImage && !values.imageCredit) {
+    return {
+      error: "Add a copyright credit for the featured image.",
+      fieldErrors: {
+        imageCredit: ["Example: Image credit: Rockstar Games / Netflix"],
       },
     };
   }
@@ -189,6 +199,7 @@ export async function saveArticle(
     body,
     image_path: nextImagePath,
     image_alt: nextImagePath ? values.imageAlt : "",
+    image_credit: nextImagePath ? values.imageCredit : "",
     status,
     published_at: values.publishedAt
       ? `${values.publishedAt}T12:00:00.000Z`

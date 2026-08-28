@@ -3,6 +3,7 @@ import { ArticleCard } from "@/components/Cards";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SectionHeader } from "@/components/SectionHeader";
 import { RichTextContent } from "@/components/RichTextContent";
+import { formatImageCredit } from "@/lib/cms/images";
 import type { Article } from "@/lib/data";
 import { getRelatedArticles } from "@/lib/data";
 
@@ -45,12 +46,17 @@ export function ArticleDetail({
         </p>
       </div>
 
-      <div
-        className="mx-auto mt-8 aspect-[16/9] max-w-4xl overflow-hidden rounded-lg bg-cover bg-center"
-        style={{ backgroundImage: article.image }}
-        role="img"
-        aria-label={article.imageAlt}
-      />
+      <div className="mx-auto mt-8 max-w-4xl">
+        <div
+          className="aspect-[16/9] overflow-hidden rounded-lg bg-cover bg-center"
+          style={{ backgroundImage: article.image }}
+          role="img"
+          aria-label={article.imageAlt}
+        />
+        <p className="mt-2 text-center text-xs leading-5 text-muted-foreground">
+          {formatImageCredit(article.imageCredit)}
+        </p>
+      </div>
 
       <div className="mx-auto mt-8 max-w-3xl">
         <RichTextContent body={article.body} />

@@ -292,6 +292,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
             <FieldError errors={state.fieldErrors?.image} />
 
             {imagePreview ? (
+              <>
               <label className="group mt-5 block">
                 <span className="text-sm font-semibold text-foreground transition-colors group-focus-within:text-primary">
                   Alternative text
@@ -309,8 +310,29 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                 </p>
                 <FieldError errors={state.fieldErrors?.imageAlt} />
               </label>
+              <label className="group mt-5 block">
+                <span className="text-sm font-semibold text-foreground transition-colors group-focus-within:text-primary">
+                  Copyright credit
+                </span>
+                <input
+                  name="imageCredit"
+                  defaultValue={article?.image_credit ?? ""}
+                  maxLength={180}
+                  required
+                  placeholder="Image credit: Rockstar Games / Netflix"
+                  className="mt-2 h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Shown under the image. Example: Source: Rockstar Games via YouTube
+                </p>
+                <FieldError errors={state.fieldErrors?.imageCredit} />
+              </label>
+              </>
             ) : (
-              <input type="hidden" name="imageAlt" value="" />
+              <>
+                <input type="hidden" name="imageAlt" value="" />
+                <input type="hidden" name="imageCredit" value="" />
+              </>
             )}
           </section>
 

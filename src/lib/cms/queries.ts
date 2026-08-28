@@ -43,6 +43,7 @@ export function mapArticleRow(row: ArticleRow): Article {
     date: formatDate(row.published_at),
     image: imageUrl ? `url("${imageUrl}")` : FALLBACK_IMAGE,
     imageAlt: row.image_alt || row.title,
+    imageCredit: row.image_credit || undefined,
     tag: row.tag || (row.featured_order ? "Featured" : undefined),
     body: normalizeArticleBody(row.body),
   };

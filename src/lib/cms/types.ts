@@ -13,6 +13,7 @@ export type ArticleRow = {
   body: ArticleBody;
   image_path: string | null;
   image_alt: string;
+  image_credit: string;
   status: ArticleStatus;
   published_at: string | null;
   featured_order: number | null;
@@ -32,6 +33,7 @@ export type ArticleFormState = {
       | "body"
       | "image"
       | "imageAlt"
+      | "imageCredit"
       | "publishedAt"
       | "featuredOrder",
       string[]
