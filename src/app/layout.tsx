@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Plus_Jakarta_Sans, Bebas_Neue, Geist_Mono } from "next/font/google";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { MobileNav } from "@/components/MobileNav";
+import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
 const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID?.trim();
@@ -50,10 +48,7 @@ export default function RootLayout({
       className={`${body.variable} ${display.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col overflow-x-hidden bg-background font-sans text-foreground">
-        <Header />
-        <main className="flex-1 overflow-x-hidden pb-20 md:pb-0">{children}</main>
-        <Footer />
-        <MobileNav />
+        <AppShell>{children}</AppShell>
       </body>
       {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
     </html>
