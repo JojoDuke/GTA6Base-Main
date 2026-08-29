@@ -13,7 +13,8 @@ export async function getAdminArticles(): Promise<ArticleRow[]> {
     .order("updated_at", { ascending: false });
 
   if (error) {
-    throw new Error(`Unable to load articles: ${error.message}`);
+    console.error("Unable to load articles:", error.message);
+    return [];
   }
 
   return (data ?? []) as ArticleRow[];
@@ -31,7 +32,8 @@ export async function getAdminArticle(
     .maybeSingle();
 
   if (error) {
-    throw new Error(`Unable to load the article: ${error.message}`);
+    console.error("Unable to load the article:", error.message);
+    return undefined;
   }
 
   return data as ArticleRow | undefined;

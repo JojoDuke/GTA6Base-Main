@@ -1,5 +1,6 @@
 export const ARTICLE_IMAGE_BUCKET = "article-images";
-export const MAX_ARTICLE_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_ARTICLE_IMAGE_BYTES = Math.floor(3.5 * 1024 * 1024);
+export const MAX_ARTICLE_IMAGE_LABEL = "3.5 MB";
 
 export const articleImageExtensions: Record<string, string> = {
   "image/jpeg": "jpg",

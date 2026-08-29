@@ -17,7 +17,11 @@ import {
   saveArticle,
 } from "@/app/admin/(protected)/articles/actions";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
-import { getArticleImageUrl } from "@/lib/cms/images";
+import {
+  getArticleImageUrl,
+  MAX_ARTICLE_IMAGE_BYTES,
+  MAX_ARTICLE_IMAGE_LABEL,
+} from "@/lib/cms/images";
 import {
   initialArticleFormState,
   type ArticleRow,
@@ -60,6 +64,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
     getArticleImageUrl(article?.image_path ?? null),
   );
   const [removeImage, setRemoveImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const imageInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -217,7 +222,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                   Featured image
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  JPEG, PNG, WebP, or AVIF up to 5 MB.
+                  JPEG, PNG, WebP, or AVIF up to {MAX_ARTICLE_IMAGE_LABEL}.
                 </p>
               </div>
             </div>
@@ -231,6 +236,17 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
               className="sr-only"
               onChange={(event) => {
                 const file = event.target.files?.[0] ?? null;
+
+                if (file && file.size > MAX_ARTICLE_IMAGE_BYTES) {
+                  setImageError(
+                    `Images must be ${MAX_ARTICLE_IMAGE_LABEL} or smaller.`,
+                  );
+                  setSelectedImage(null);
+                  event.target.value = "";
+                  return;
+                }
+
+                setImageError(null);
                 setSelectedImage(file);
                 setRemoveImage(false);
                 setImagePreview(file ? URL.createObjectURL(file) : null);
@@ -289,7 +305,9 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                 </span>
               </label>
             )}
-            <FieldError errors={state.fieldErrors?.image} />
+            <FieldError
+              errors={imageError ? [imageError] : state.fieldErrors?.image}
+            />
 
             {imagePreview ? (
               <>

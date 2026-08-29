@@ -9,6 +9,7 @@ import {
   articleImageExtensions,
   getArticleImageUrl,
   MAX_ARTICLE_IMAGE_BYTES,
+  MAX_ARTICLE_IMAGE_LABEL,
 } from "@/lib/cms/images";
 import { documentToPlainText, isRichDocument, parseArticleBody } from "@/lib/cms/rich-text";
 import type { ArticleFormState, ArticleStatus } from "@/lib/cms/types";
@@ -43,9 +44,38 @@ function databaseError(message: string): ArticleFormState {
   return { error: "Could not save the article. Please try again." };
 }
 
+function isRedirectError(error: unknown) {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof error.digest === "string" &&
+    error.digest.startsWith("NEXT_REDIRECT")
+  );
+}
+
 export async function saveArticle(
   articleId: string | null,
   _previousState: ArticleFormState,
+  formData: FormData,
+): Promise<ArticleFormState> {
+  try {
+    return await saveArticleInner(articleId, formData);
+  } catch (error) {
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
+    console.error("saveArticle failed:", error);
+    return {
+      error:
+        "Could not save the article. If you added an image, try a smaller JPEG or WebP.",
+    };
+  }
+}
+
+async function saveArticleInner(
+  articleId: string | null,
   formData: FormData,
 ): Promise<ArticleFormState> {
   const user = await requireAdmin();
@@ -167,7 +197,9 @@ export async function saveArticle(
     if (imageFile.size > MAX_ARTICLE_IMAGE_BYTES) {
       return {
         error: "The selected image is too large.",
-        fieldErrors: { image: ["Images must be 5 MB or smaller."] },
+        fieldErrors: {
+          image: [`Images must be ${MAX_ARTICLE_IMAGE_LABEL} or smaller.`],
+        },
       };
     }
 
@@ -260,7 +292,10 @@ export async function uploadInlineImage(formData: FormData) {
   }
 
   if (imageFile.size > MAX_ARTICLE_IMAGE_BYTES) {
-    return { ok: false as const, error: "Images must be 5 MB or smaller." };
+    return {
+      ok: false as const,
+      error: `Images must be ${MAX_ARTICLE_IMAGE_LABEL} or smaller.`,
+    };
   }
 
   const path = `${user.id}/inline/${randomUUID()}.${extension}`;

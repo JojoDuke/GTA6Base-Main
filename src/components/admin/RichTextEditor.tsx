@@ -20,6 +20,10 @@ import {
   Unlink,
 } from "lucide-react";
 import { uploadInlineImage } from "@/app/admin/(protected)/articles/actions";
+import {
+  MAX_ARTICLE_IMAGE_BYTES,
+  MAX_ARTICLE_IMAGE_LABEL,
+} from "@/lib/cms/images";
 import { richTextExtensions } from "@/lib/cms/rich-text-extensions";
 import { normalizeBodyToDocument } from "@/lib/cms/rich-text";
 
@@ -275,6 +279,13 @@ export function RichTextEditor({
     event.target.value = "";
 
     if (!file || !editor) return;
+
+    if (file.size > MAX_ARTICLE_IMAGE_BYTES) {
+      setUploadError(
+        `Images must be ${MAX_ARTICLE_IMAGE_LABEL} or smaller.`,
+      );
+      return;
+    }
 
     setUploading(true);
     setUploadError(null);
