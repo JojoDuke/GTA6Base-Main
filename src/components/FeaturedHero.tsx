@@ -24,7 +24,7 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
   const activeIndex = index % slides.length;
 
   return (
-    <div className="relative mb-4 aspect-[1.91/1] h-auto w-full overflow-hidden sm:aspect-[40/21] sm:h-[414px] min-[1200px]:mb-0 min-[1200px]:w-[800px] lg:rounded-md">
+    <div className="relative mb-4 aspect-[1.91/1] h-auto w-full overflow-hidden sm:aspect-[40/21] sm:h-[414px] min-[1200px]:mb-0 lg:rounded-md">
       {slides.map((item, i) => (
         <Link
           key={item.id}
@@ -51,7 +51,7 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
 
           <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2.5 p-4 sm:gap-3 sm:p-6">
             <div className="flex flex-wrap items-center gap-2">
-              {item.tag ? (
+              {item.tag && item.tag !== "Featured" ? (
                 <span className="rounded bg-primary px-2 py-0.5 text-xs font-semibold text-white">
                   {item.tag}
                 </span>
@@ -70,40 +70,44 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
         </Link>
       ))}
 
-      <div className="absolute left-3 top-1/2 z-10 hidden -translate-y-1/2 gap-1 sm:left-4 sm:flex">
-        <button
-          type="button"
-          aria-label="Previous slide"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50"
-          onClick={() =>
-            setIndex((i) => (i - 1 + slides.length) % slides.length)
-          }
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <button
-          type="button"
-          aria-label="Next slide"
-          className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50"
-          onClick={() => setIndex((i) => (i + 1) % slides.length)}
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
+      {slides.length > 1 ? (
+        <>
+          <div className="absolute left-3 top-1/2 z-10 hidden -translate-y-1/2 gap-1 sm:left-4 sm:flex">
+            <button
+              type="button"
+              aria-label="Previous slide"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50"
+              onClick={() =>
+                setIndex((i) => (i - 1 + slides.length) % slides.length)
+              }
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              aria-label="Next slide"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/35 text-white backdrop-blur-sm transition hover:bg-black/50"
+              onClick={() => setIndex((i) => (i + 1) % slides.length)}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
 
-      <div className="absolute bottom-3 right-4 z-10 flex gap-1.5 sm:bottom-5 sm:right-6">
-        {slides.map((item, i) => (
-          <button
-            key={item.id}
-            type="button"
-            aria-label={`Go to slide ${i + 1}`}
-            className={`h-1.5 cursor-pointer rounded-full transition-all hover:bg-white ${
-              i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/50"
-            }`}
-            onClick={() => setIndex(i)}
-          />
-        ))}
-      </div>
+          <div className="absolute bottom-3 right-4 z-10 flex gap-1.5 sm:bottom-5 sm:right-6">
+            {slides.map((item, i) => (
+              <button
+                key={item.id}
+                type="button"
+                aria-label={`Go to slide ${i + 1}`}
+                className={`h-1.5 cursor-pointer rounded-full transition-all hover:bg-white ${
+                  i === activeIndex ? "w-6 bg-white" : "w-1.5 bg-white/50"
+                }`}
+                onClick={() => setIndex(i)}
+              />
+            ))}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -13,7 +13,7 @@ import {
 } from "@/lib/cms/images";
 import { documentToPlainText, isRichDocument, parseArticleBody } from "@/lib/cms/rich-text";
 import type { ArticleFormState, ArticleStatus } from "@/lib/cms/types";
-import { articleFormSchema } from "@/lib/cms/validation";
+import { clipExcerpt, articleFormSchema } from "@/lib/cms/validation";
 import { createClient } from "@/lib/supabase/server";
 
 function revalidatePublicContent(slug?: string | null) {
@@ -31,14 +31,6 @@ function revalidatePublicContent(slug?: string | null) {
 function databaseError(message: string): ArticleFormState {
   if (message.includes("articles_slug_key")) {
     return { fieldErrors: { slug: ["That slug is already in use."] } };
-  }
-
-  if (message.includes("articles_featured_order_key")) {
-    return {
-      fieldErrors: {
-        featuredOrder: ["That featured slot is already assigned."],
-      },
-    };
   }
 
   return { error: "Could not save the article. Please try again." };
@@ -134,7 +126,6 @@ async function saveArticleInner(
     imageAlt: formData.get("imageAlt"),
     imageCredit: formData.get("imageCredit"),
     publishedAt: formData.get("publishedAt"),
-    featuredOrder: formData.get("featuredOrder"),
   });
 
   if (!result.success) {
@@ -238,9 +229,7 @@ async function saveArticleInner(
       : status === "published"
         ? new Date().toISOString()
         : null,
-    featured_order: values.featuredOrder
-      ? Number(values.featuredOrder)
-      : null,
+    featured_order: null,
   };
 
   const query = articleId
@@ -320,7 +309,6 @@ export async function uploadInlineImage(formData: FormData) {
   return { ok: true as const, url };
 }
 
-const EXCERPT_MAX_LENGTH = 320;
 
 function bodyTextFromInput(raw: string) {
   try {
@@ -367,12 +355,12 @@ export async function generateExcerpt(input: { title: string; body: string }) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         temperature: 0.4,
-        max_tokens: 120,
+        max_tokens: 60,
         messages: [
           {
             role: "system",
             content:
-              "You write short excerpts for GTA6Base, an unofficial Grand Theft Auto VI news site. Return only the excerpt. One or two sentences, no quotes, no preamble, max 320 characters.",
+              "You write short excerpts for GTA6Base, an unofficial Grand Theft Auto VI news site. Return only the excerpt. One sentence, no quotes, no preamble, max 150 characters.",
           },
           {
             role: "user",
@@ -393,9 +381,8 @@ export async function generateExcerpt(input: { title: string; body: string }) {
       choices?: Array<{ message?: { content?: string } }>;
     };
     const excerpt = payload.choices?.[0]?.message?.content
-      ?.trim()
-      .replace(/^["']|["']$/g, "")
-      .slice(0, EXCERPT_MAX_LENGTH);
+      ? clipExcerpt(payload.choices[0].message.content)
+      : "";
 
     if (!excerpt) {
       return {

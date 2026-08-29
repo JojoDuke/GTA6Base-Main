@@ -34,7 +34,8 @@ export default async function AdminDashboardPage() {
             Articles
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Create drafts and manage your published coverage.
+            Publish in chronological order. The newest article leads the
+            homepage.
           </p>
         </div>
         <Link
@@ -69,9 +70,9 @@ export default async function AdminDashboardPage() {
 
       <section className="mt-8 overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
-          <h2 className="text-sm font-bold text-foreground">Recent articles</h2>
+          <h2 className="text-sm font-bold text-foreground">Articles</h2>
           <p className="text-xs text-muted-foreground">
-            Updated most recently
+            Newest published first
           </p>
         </div>
 
@@ -102,8 +103,10 @@ export default async function AdminDashboardPage() {
                     </span>
                   </div>
                   <p className="mt-1 truncate text-xs text-muted-foreground">
-                    /news/{article.slug} · Updated{" "}
-                    {formatDate(article.updated_at)}
+                    /news/{article.slug} ·{" "}
+                    {article.status === "published" && article.published_at
+                      ? `Published ${formatDate(article.published_at)}`
+                      : `Updated ${formatDate(article.updated_at)}`}
                   </p>
                 </div>
                 <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-all duration-200 group-hover:translate-x-1 group-hover:text-primary" />

@@ -34,8 +34,7 @@ export type ArticleFormState = {
       | "image"
       | "imageAlt"
       | "imageCredit"
-      | "publishedAt"
-      | "featuredOrder",
+      | "publishedAt",
       string[]
     >
   >;

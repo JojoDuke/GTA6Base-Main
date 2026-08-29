@@ -2,7 +2,6 @@ import "server-only";
 
 import type { Article } from "@/lib/data";
 import {
-  featuredSlides,
   getArticleBySlug as getStaticArticleBySlug,
   getNewsArticles as getStaticNewsArticles,
   latestNews,
@@ -44,7 +43,7 @@ export function mapArticleRow(row: ArticleRow): Article {
     image: imageUrl ? `url("${imageUrl}")` : FALLBACK_IMAGE,
     imageAlt: row.image_alt || row.title,
     imageCredit: row.image_credit || undefined,
-    tag: row.tag || (row.featured_order ? "Featured" : undefined),
+    tag: row.tag || undefined,
     body: normalizeArticleBody(row.body),
   };
 }
@@ -84,32 +83,18 @@ function mergeBySlug(preferred: Article[], fallback: Article[]) {
   return [...bySlug.values()].sort((a, b) => sortDate(b) - sortDate(a));
 }
 
-function featuredFromRows(rows: ArticleRow[]) {
-  const featured = rows
-    .filter((row) => row.featured_order != null)
-    .sort((a, b) => (a.featured_order ?? 0) - (b.featured_order ?? 0))
-    .map(mapArticleRow);
-
-  return featured.length ? featured : featuredSlides;
-}
-
 export async function getPublishedArticles(): Promise<Article[]> {
   const rows = await getPublishedRows();
   return mergeBySlug(rows.map(mapArticleRow), getStaticNewsArticles());
 }
 
-export async function getHomeNews(limit = 4) {
-  const rows = await getPublishedRows();
-  const cmsArticles = rows.map(mapArticleRow);
+export async function getHomeNews(heroCount = 3, gridCount = 4) {
+  const articles = await getPublishedArticles();
 
   return {
-    featured: featuredFromRows(rows),
-    latest: mergeBySlug(cmsArticles, latestNews).slice(0, limit),
+    hero: articles.slice(0, heroCount),
+    latest: articles.slice(heroCount, heroCount + gridCount),
   };
-}
-
-export async function getFeaturedArticles(): Promise<Article[]> {
-  return featuredFromRows(await getPublishedRows());
 }
 
 export async function getLatestArticles(limit = 4): Promise<Article[]> {

@@ -26,6 +26,7 @@ import {
   initialArticleFormState,
   type ArticleRow,
 } from "@/lib/cms/types";
+import { EXCERPT_MAX_LENGTH } from "@/lib/cms/validation";
 
 function slugify(value: string) {
   return value
@@ -195,12 +196,26 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                   name="excerpt"
                   value={excerpt}
                   onChange={(event) => setExcerpt(event.target.value)}
-                  maxLength={320}
-                  rows={3}
+                  maxLength={EXCERPT_MAX_LENGTH}
+                  rows={2}
                   required
-                  placeholder="A short summary for article cards and search results"
+                  placeholder="One sentence for cards and search results"
                   className="mt-2 w-full resize-y rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 outline-none transition-colors placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
                 />
+                <div className="mt-1.5 flex items-start justify-between gap-3">
+                  <p className="text-xs text-muted-foreground">
+                    One sentence, up to {EXCERPT_MAX_LENGTH} characters.
+                  </p>
+                  <p
+                    className={`shrink-0 text-xs tabular-nums ${
+                      excerpt.length > EXCERPT_MAX_LENGTH
+                        ? "font-medium text-accent"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    {excerpt.length}/{EXCERPT_MAX_LENGTH}
+                  </p>
+                </div>
                 <FieldError
                   errors={
                     excerptError
@@ -426,24 +441,10 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                   defaultValue={dateInputValue(article?.published_at)}
                   className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10"
                 />
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  Newest date appears first on the homepage.
+                </p>
                 <FieldError errors={state.fieldErrors?.publishedAt} />
-              </label>
-
-              <label className="block">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  Featured slot
-                </span>
-                <select
-                  name="featuredOrder"
-                  defaultValue={article?.featured_order?.toString() ?? ""}
-                  className="mt-2 h-11 w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition-colors hover:border-slate-300 hover:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10"
-                >
-                  <option value="">Not featured</option>
-                  <option value="1">Slot 1</option>
-                  <option value="2">Slot 2</option>
-                  <option value="3">Slot 3</option>
-                </select>
-                <FieldError errors={state.fieldErrors?.featuredOrder} />
               </label>
             </div>
           </section>

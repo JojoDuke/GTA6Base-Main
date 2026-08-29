@@ -17,7 +17,26 @@ export async function getAdminArticles(): Promise<ArticleRow[]> {
     return [];
   }
 
-  return (data ?? []) as ArticleRow[];
+  return [...((data ?? []) as ArticleRow[])].sort((left, right) => {
+    const leftPublished =
+      left.status === "published" && left.published_at
+        ? Date.parse(left.published_at)
+        : null;
+    const rightPublished =
+      right.status === "published" && right.published_at
+        ? Date.parse(right.published_at)
+        : null;
+
+    if (leftPublished != null && rightPublished != null) {
+      return rightPublished - leftPublished;
+    }
+
+    if (leftPublished != null || rightPublished != null) {
+      return leftPublished != null ? 1 : -1;
+    }
+
+    return Date.parse(right.updated_at) - Date.parse(left.updated_at);
+  });
 }
 
 export async function getAdminArticle(
