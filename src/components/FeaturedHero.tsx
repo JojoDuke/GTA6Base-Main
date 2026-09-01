@@ -24,7 +24,7 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
   const activeIndex = index % slides.length;
 
   return (
-    <div className="relative mb-4 aspect-[1.91/1] h-auto w-full overflow-hidden sm:aspect-[40/21] sm:h-[414px] min-[1200px]:mb-0 lg:rounded-md">
+    <div className="relative mb-4 aspect-[16/9] h-auto w-full overflow-hidden min-[1200px]:mb-0 lg:rounded-md">
       {slides.map((item, i) => (
         <Link
           key={item.id}
@@ -39,7 +39,7 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
           aria-label={`Read ${item.title}`}
         >
           <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.02]"
+            className="absolute inset-0 origin-top bg-cover bg-top transition-transform duration-500 group-hover:scale-[1.02]"
             style={{ backgroundImage: item.image }}
             aria-hidden
           />

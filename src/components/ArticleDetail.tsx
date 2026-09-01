@@ -48,7 +48,7 @@ export function ArticleDetail({
 
       <div className="mx-auto mt-8 max-w-4xl">
         <div
-          className="aspect-[16/9] overflow-hidden rounded-lg bg-cover bg-center"
+          className="aspect-[16/9] overflow-hidden rounded-lg bg-cover bg-top"
           style={{ backgroundImage: article.image }}
           role="img"
           aria-label={article.imageAlt}
