@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Newspaper, Database, Flame } from "lucide-react";
+import { Database, Home, Newspaper } from "lucide-react";
 
 const items = [
+  { href: "/", label: "Home", icon: Home },
   { href: "/news", label: "News", icon: Newspaper },
   { href: "/database", label: "Database", icon: Database },
-  { href: "/leaks", label: "Leaks", icon: Flame },
 ] as const;
 
 export function MobileNav() {

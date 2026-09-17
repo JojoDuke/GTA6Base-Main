@@ -3,7 +3,11 @@ import { SectionHeader } from "@/components/SectionHeader";
 
 export const metadata: Metadata = {
   title: "Map",
-  description: "Interactive Leonida map — coming soon.",
+  description: "Interactive Leonida map project.",
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function MapPage() {

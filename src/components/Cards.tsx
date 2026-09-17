@@ -23,7 +23,7 @@ function MediaBlock({
 export function ArticleCard({ article }: { article: Article }) {
   return (
     <Link
-      href={`/${article.category === "Leak" ? "leaks" : "news"}/${article.slug}`}
+      href={`/news/${article.slug}`}
       className="group flex min-h-[294px] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
     >
       <MediaBlock

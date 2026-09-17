@@ -6,9 +6,7 @@ const columns = [
     title: "Explore",
     links: [
       { href: "/news", label: "News" },
-      { href: "/leaks", label: "Leaks" },
       { href: "/database", label: "Database" },
-      { href: "/map", label: "Map" },
     ],
   },
   {
@@ -23,6 +21,8 @@ const columns = [
     title: "Company",
     links: [
       { href: "/about", label: "About" },
+      { href: "/editorial-policy", label: "Editorial policy" },
+      { href: "/contact", label: "Contact" },
       { href: "/advertise", label: "Advertise" },
     ],
   },
@@ -31,7 +31,7 @@ const columns = [
     links: [
       { href: "/privacy", label: "Privacy" },
       { href: "/terms", label: "Terms" },
-      { href: "/disclosure", label: "Affiliate disclosure" },
+      { href: "/disclosure", label: "Advertising disclosure" },
     ],
   },
 ] as const;

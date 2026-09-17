@@ -3,23 +3,27 @@ import { getPublishedArticles } from "@/lib/cms/queries";
 
 const siteUrl = "https://gta6base.io";
 
-const routes = [
+const staticRoutes = [
   "/",
   "/news",
   "/characters",
   "/vehicles",
   "/locations",
-  "/leaks",
   "/database",
-  "/map",
   "/about",
+  "/editorial-policy",
+  "/contact",
+  "/advertise",
+  "/privacy",
+  "/terms",
+  "/disclosure",
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
   const newsArticles = await getPublishedArticles();
 
-  const staticEntries = routes.map((path) => ({
+  const staticEntries = staticRoutes.map((path) => ({
     url: `${siteUrl}${path === "/" ? "" : path}`,
     lastModified,
     changeFrequency:

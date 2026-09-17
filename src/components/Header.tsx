@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Search, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { navLinks, utilityLinks } from "@/lib/data";
@@ -35,29 +35,6 @@ export function Header() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="relative cursor-pointer"
-              aria-label="Search"
-            >
-              <div className="rounded-lg p-2 xl:absolute xl:inset-y-0 xl:start-0 xl:flex xl:items-center xl:ps-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <input
-                type="text"
-                readOnly
-                placeholder="Search...."
-                className="hidden h-9 w-52 cursor-pointer rounded-xl border border-border bg-white py-2 pe-8 ps-9 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none xl:block"
-              />
-              <div className="absolute inset-y-0 end-0 hidden items-center pe-2.5 xl:flex">
-                <kbd className="pointer-events-none flex h-5 select-none items-center rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
-                  /
-                </kbd>
-              </div>
-            </button>
           </div>
 
           {open && (

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { Plus_Jakarta_Sans, Bebas_Neue, Geist_Mono } from "next/font/google";
+import { AdSenseScript } from "@/components/AdSenseScript";
 import { AppShell } from "@/components/AppShell";
 import "./globals.css";
 
@@ -25,11 +26,11 @@ const mono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GTA6Base | GTA 6 News, Database & Leaks",
+    default: "GTA6Base | GTA 6 News & Database",
     template: "%s | GTA6Base",
   },
   description:
-    "The GTA 6 database and blog — characters, vehicles, locations, news, and leaks in one place.",
+    "The GTA 6 database and blog — characters, vehicles, locations, and news in one place.",
   metadataBase: new URL("https://gta6base.io"),
   icons: {
     icon: "/favicon.ico",
@@ -51,6 +52,7 @@ export default function RootLayout({
         <AppShell>{children}</AppShell>
       </body>
       {gaId ? <GoogleAnalytics gaId={gaId} /> : null}
+      <AdSenseScript />
     </html>
   );
 }
