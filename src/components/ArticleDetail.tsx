@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { ArticleCard } from "@/components/Cards";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -60,21 +59,6 @@ export function ArticleDetail({
 
       <div className="mx-auto mt-8 max-w-3xl">
         <RichTextContent body={article.body} />
-      </div>
-
-      <div className="mx-auto mt-10 max-w-3xl border-t border-border pt-6 text-sm text-muted-foreground">
-        <p>
-          Unofficial fan coverage on{" "}
-          <Link href="/" className="font-semibold text-primary hover:text-primary-hover">
-            GTA6Base
-          </Link>
-          . Not affiliated with Rockstar Games or Take-Two Interactive.
-        </p>
-        <p className="mt-2">
-          <Link href="/news" className="hover:text-primary">
-            ← Back to News
-          </Link>
-        </p>
       </div>
 
       {relatedArticles.length > 0 ? (

@@ -4,7 +4,6 @@ import type { Article } from "@/lib/data";
 import {
   getArticleBySlug as getStaticArticleBySlug,
   getNewsArticles as getStaticNewsArticles,
-  latestNews,
 } from "@/lib/data";
 import { getArticleImageUrl } from "@/lib/cms/images";
 import { normalizeArticleBody } from "@/lib/cms/rich-text";
@@ -69,6 +68,10 @@ async function getPublishedRows(): Promise<ArticleRow[]> {
   return (data ?? []) as ArticleRow[];
 }
 
+function hasRealImage(image: string) {
+  return image.startsWith("url(");
+}
+
 function mergeBySlug(preferred: Article[], fallback: Article[]) {
   const bySlug = new Map<string, Article>();
 
@@ -85,21 +88,20 @@ function mergeBySlug(preferred: Article[], fallback: Article[]) {
 
 export async function getPublishedArticles(): Promise<Article[]> {
   const rows = await getPublishedRows();
-  return mergeBySlug(rows.map(mapArticleRow), getStaticNewsArticles());
+  const staticArticles = getStaticNewsArticles().filter((article) =>
+    hasRealImage(article.image),
+  );
+
+  return mergeBySlug(rows.map(mapArticleRow), staticArticles);
 }
 
-export async function getHomeNews(heroCount = 3, gridCount = 4) {
+export async function getHomeNews(heroCount = 3) {
   const articles = await getPublishedArticles();
 
   return {
     hero: articles.slice(0, heroCount),
-    latest: articles.slice(heroCount, heroCount + gridCount),
+    latest: articles.slice(heroCount),
   };
-}
-
-export async function getLatestArticles(limit = 4): Promise<Article[]> {
-  const rows = await getPublishedRows();
-  return mergeBySlug(rows.map(mapArticleRow), latestNews).slice(0, limit);
 }
 
 export async function getArticleBySlug(
