@@ -236,6 +236,18 @@ function Toolbar({
   );
 }
 
+function countBodyText(text: string) {
+  const characters = text.length;
+  const trimmed = text.trim();
+  const words = trimmed ? trimmed.split(/\s+/).length : 0;
+
+  return { words, characters };
+}
+
+function formatCount(value: number, singular: string, plural: string) {
+  return `${value.toLocaleString("en-US")} ${value === 1 ? singular : plural}`;
+}
+
 export function RichTextEditor({
   name = "body",
   initialContent,
@@ -271,6 +283,9 @@ export function RichTextEditor({
   });
 
   const editorReady = mounted && Boolean(editor);
+  const { words, characters } = countBodyText(
+    editor?.getText({ blockSeparator: "\n" }) ?? "",
+  );
 
   async function handleImageSelected(
     event: ChangeEvent<HTMLInputElement>,
@@ -334,6 +349,10 @@ export function RichTextEditor({
             Loading editor…
           </div>
         )}
+        <p className="border-t border-slate-200 px-3 py-1.5 text-left text-xs tabular-nums text-muted-foreground">
+          {formatCount(words, "word", "words")} ·{" "}
+          {formatCount(characters, "character", "characters")}
+        </p>
       </div>
       {uploadError ? (
         <p className="mt-1.5 text-xs font-medium text-accent">{uploadError}</p>
