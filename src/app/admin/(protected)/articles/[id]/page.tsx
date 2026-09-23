@@ -39,8 +39,8 @@ export default async function EditArticlePage({ params }: Props) {
         <span
           className={
             article.status === "published"
-              ? "w-fit rounded-full bg-emerald-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20"
-              : "w-fit rounded-full bg-amber-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/20"
+              ? "w-fit rounded-full bg-emerald-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-400/20"
+              : "w-fit rounded-full bg-amber-400/10 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 ring-1 ring-amber-400/20"
           }
         >
           {article.status}

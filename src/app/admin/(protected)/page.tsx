@@ -60,14 +60,14 @@ export default async function AdminDashboardPage() {
             label: "Published",
             value: published,
             icon: Radio,
-            tone: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/20",
+            tone: "bg-emerald-400/10 text-emerald-700 dark:text-emerald-300 ring-emerald-400/20",
             glow: "hover:border-emerald-400/40",
           },
           {
             label: "Drafts",
             value: drafts,
             icon: CalendarDays,
-            tone: "bg-amber-400/10 text-amber-300 ring-amber-400/20",
+            tone: "bg-amber-400/10 text-amber-700 dark:text-amber-300 ring-amber-400/20",
             glow: "hover:border-amber-400/40",
           },
         ].map(({ label, value, icon: Icon, tone, glow }) => (
@@ -117,8 +117,8 @@ export default async function AdminDashboardPage() {
                     <span
                       className={
                         article.status === "published"
-                          ? "rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/20"
-                          : "rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-300 ring-1 ring-amber-400/20"
+                          ? "rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-400/20"
+                          : "rounded-full bg-amber-400/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 ring-1 ring-amber-400/20"
                       }
                     >
                       {article.status}

@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { ExternalLink, LogOut, ShieldCheck } from "lucide-react";
+import { ThemeToggle } from "@/components/admin/ThemeToggle";
+import { ADMIN_THEME_COOKIE, parseAdminTheme } from "@/lib/cms/admin-theme";
 import { requireAdmin } from "@/lib/cms/auth";
 import { signOut } from "./actions";
 
@@ -9,6 +12,7 @@ export default async function AdminProtectedLayout({
   children: React.ReactNode;
 }>) {
   const user = await requireAdmin();
+  const theme = parseAdminTheme((await cookies()).get(ADMIN_THEME_COOKIE)?.value);
 
   return (
     <div className="min-h-screen">
@@ -18,7 +22,7 @@ export default async function AdminProtectedLayout({
             href="/admin"
             className="group flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 text-white shadow-[0_0_24px_rgb(46_163_255_/_0.25)] ring-1 ring-primary/30 transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0c2039] text-white shadow-sm ring-1 ring-primary/30 dark:bg-gradient-to-br dark:from-primary/25 dark:to-accent/20 dark:shadow-[0_0_24px_rgb(46_163_255_/_0.25)] transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
               <ShieldCheck className="h-4 w-4 text-primary" />
             </span>
             <span>
@@ -40,6 +44,7 @@ export default async function AdminProtectedLayout({
               View site
               <ExternalLink className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
+            <ThemeToggle initialTheme={theme} />
             <div className="hidden h-7 w-px bg-border sm:block" />
             <div className="hidden text-right md:block">
               <p className="text-xs font-semibold text-foreground">Admin</p>

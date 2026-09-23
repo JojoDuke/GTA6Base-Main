@@ -229,7 +229,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
 
           <section className="rounded-3xl border border-border bg-card p-5 shadow-sm sm:p-7">
             <div className="flex items-center gap-3 border-b border-border pb-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-300">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-300">
                 <FileImage className="h-4 w-4" />
               </span>
               <div>
