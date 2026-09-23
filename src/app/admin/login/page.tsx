@@ -28,7 +28,7 @@ export default async function AdminLoginPage({ searchParams }: Props) {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(24,150,254,0.2),transparent_34%),radial-gradient(circle_at_85%_80%,rgba(255,45,106,0.14),transparent_30%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,.7)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.7)_1px,transparent_1px)] [background-size:42px_42px]" />
 
-      <div className="relative grid w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/10 bg-white shadow-[0_32px_100px_rgba(0,0,0,0.45)] lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative grid w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/10 bg-card shadow-[0_32px_100px_rgba(0,0,0,0.45)] lg:grid-cols-[1.05fr_0.95fr]">
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-[#0c2039] via-[#102947] to-[#0a1729] p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" />
           <div className="relative">
@@ -69,7 +69,7 @@ export default async function AdminLoginPage({ searchParams }: Props) {
             {message ? (
               <p
                 role="alert"
-                className="rounded-xl border border-accent/15 bg-accent/8 px-4 py-3 text-sm font-medium text-accent"
+                className="rounded-xl border border-accent/15 bg-accent/10 px-4 py-3 text-sm font-medium text-accent"
               >
                 {message}
               </p>
@@ -85,7 +85,7 @@ export default async function AdminLoginPage({ searchParams }: Props) {
                 autoComplete="username"
                 placeholder="you@example.com"
                 required
-                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-foreground outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+                className="h-12 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground/60 hover:border-border-strong hover:bg-card focus:border-primary focus:bg-card focus:ring-4 focus:ring-primary/15"
               />
             </label>
 
@@ -99,7 +99,7 @@ export default async function AdminLoginPage({ searchParams }: Props) {
                 autoComplete="current-password"
                 placeholder="Enter your password"
                 required
-                className="h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-foreground outline-none transition-all duration-200 placeholder:text-slate-400 hover:border-slate-300 hover:bg-white focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+                className="h-12 w-full rounded-xl border border-border bg-muted px-4 text-sm text-foreground outline-none transition-all duration-200 placeholder:text-muted-foreground/60 hover:border-border-strong hover:bg-card focus:border-primary focus:bg-card focus:ring-4 focus:ring-primary/15"
               />
             </label>
 

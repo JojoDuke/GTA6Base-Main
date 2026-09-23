@@ -50,8 +50,8 @@ function ToolbarButton({
       onClick={onClick}
       className={`flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition-colors disabled:cursor-wait disabled:opacity-50 ${
         active
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-slate-100 hover:text-foreground"
+          ? "bg-primary/15 text-primary ring-1 ring-primary/25"
+          : "text-muted-foreground hover:bg-surface-hover hover:text-foreground"
       }`}
     >
       {children}
@@ -125,7 +125,7 @@ function Toolbar({
   }
 
   return (
-    <div className="border-b border-slate-200">
+    <div className="border-b border-border">
       <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5">
       <ToolbarButton
         label="Bold"
@@ -141,7 +141,7 @@ function Toolbar({
       >
         <Italic className="h-3.5 w-3.5" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-slate-200" />
+      <span className="mx-1 h-5 w-px bg-border" />
       <ToolbarButton
         label="Heading"
         active={editor.isActive("heading", { level: 2 })}
@@ -156,7 +156,7 @@ function Toolbar({
       >
         <Heading3 className="h-3.5 w-3.5" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-slate-200" />
+      <span className="mx-1 h-5 w-px bg-border" />
       <ToolbarButton
         label="Bullet list"
         active={editor.isActive("bulletList")}
@@ -171,7 +171,7 @@ function Toolbar({
       >
         <ListOrdered className="h-3.5 w-3.5" />
       </ToolbarButton>
-      <span className="mx-1 h-5 w-px bg-slate-200" />
+      <span className="mx-1 h-5 w-px bg-border" />
       <ToolbarButton
         label="Link"
         active={editor.isActive("link") || linkOpen}
@@ -188,7 +188,7 @@ function Toolbar({
       </ToolbarButton>
       </div>
       {linkOpen ? (
-        <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2">
+        <div className="flex items-center gap-2 border-t border-border bg-card px-2 py-2">
           <input
             ref={linkInput}
             type="text"
@@ -206,7 +206,7 @@ function Toolbar({
               }
             }}
             placeholder="https://example.com"
-            className="h-8 min-w-0 flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm outline-none placeholder:text-slate-400 focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10"
+            className="h-8 min-w-0 flex-1 rounded-lg border border-border bg-muted px-3 text-sm outline-none placeholder:text-muted-foreground/60 focus:border-primary focus:bg-card focus:ring-4 focus:ring-primary/10"
           />
           <button
             type="button"
@@ -332,7 +332,7 @@ export function RichTextEditor({
         className="sr-only"
         onChange={handleImageSelected}
       />
-      <div className="article-editor overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 transition-colors hover:border-slate-300 focus-within:border-primary focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/10">
+      <div className="article-editor overflow-hidden rounded-2xl border border-border bg-muted transition-colors hover:border-border-strong focus-within:border-primary focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/10">
         {editorReady && editor ? (
           <Toolbar
             editor={editor}
@@ -340,7 +340,7 @@ export function RichTextEditor({
             onPickImage={() => imageInput.current?.click()}
           />
         ) : (
-          <div className="h-11 border-b border-slate-200" />
+          <div className="h-11 border-b border-border" />
         )}
         {editorReady && editor ? (
           <EditorContent editor={editor} />
@@ -349,7 +349,7 @@ export function RichTextEditor({
             Loading editor…
           </div>
         )}
-        <p className="border-t border-slate-200 px-3 py-1.5 text-left text-xs tabular-nums text-muted-foreground">
+        <p className="border-t border-border px-3 py-1.5 text-left text-xs tabular-nums text-muted-foreground">
           {formatCount(words, "word", "words")} ·{" "}
           {formatCount(characters, "character", "characters")}
         </p>

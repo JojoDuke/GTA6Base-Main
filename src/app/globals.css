@@ -6,12 +6,42 @@
   --muted: #f7f7f8;
   --muted-foreground: #6b7280;
   --border: #f2f2f2;
+  --border-strong: #e2e8f0;
   --card: #ffffff;
+  --surface-hover: #f1f5f9;
   --primary: #1896fe;
   --primary-hover: #0d7fe0;
   --primary-foreground: #ffffff;
   --accent: #ff2d6a;
   --ring: #1896fe;
+}
+
+.admin-theme {
+  --background: #070c17;
+  --foreground: #e8edf7;
+  --muted: #0b1322;
+  --muted-foreground: #8d9ab5;
+  --border: #1b2740;
+  --border-strong: #2c3c5e;
+  --card: #0f1829;
+  --surface-hover: #16213a;
+  --primary: #2ea3ff;
+  --primary-hover: #5cb8ff;
+  --accent: #ff4f86;
+  --ring: #2ea3ff;
+  color-scheme: dark;
+  min-height: 100vh;
+  background:
+    radial-gradient(56rem 36rem at 8% -8%, rgb(46 163 255 / 0.14), transparent 62%),
+    radial-gradient(44rem 30rem at 100% 4%, rgb(255 79 134 / 0.09), transparent 60%),
+    radial-gradient(40rem 28rem at 50% 110%, rgb(139 92 246 / 0.08), transparent 60%),
+    var(--background);
+  background-attachment: fixed;
+  color: var(--foreground);
+}
+
+.admin-theme ::selection {
+  background: rgb(46 163 255 / 0.35);
 }
 
 @theme inline {
@@ -20,7 +50,9 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-card: var(--card);
+  --color-surface-hover: var(--surface-hover);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
@@ -250,7 +282,7 @@ body {
 }
 
 .article-editor-content p.is-editor-empty:first-child::before {
-  color: #94a3b8;
+  color: color-mix(in srgb, var(--muted-foreground) 70%, transparent);
   content: "Write your article…";
   float: left;
   height: 0;

@@ -11,14 +11,14 @@ export default async function AdminProtectedLayout({
   const user = await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb]">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-30 border-b border-border bg-background/75 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link
             href="/admin"
             className="group flex items-center gap-3 rounded-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#0c2039] text-white shadow-sm transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/25 to-accent/20 text-white shadow-[0_0_24px_rgb(46_163_255_/_0.25)] ring-1 ring-primary/30 transition-transform duration-200 group-hover:-rotate-3 group-hover:scale-105">
               <ShieldCheck className="h-4 w-4 text-primary" />
             </span>
             <span>
@@ -35,12 +35,12 @@ export default async function AdminProtectedLayout({
             <Link
               href="/"
               target="_blank"
-              className="group hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-slate-100 hover:text-foreground sm:flex"
+              className="group hidden items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-surface-hover hover:text-foreground sm:flex"
             >
               View site
               <ExternalLink className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
-            <div className="hidden h-7 w-px bg-slate-200 sm:block" />
+            <div className="hidden h-7 w-px bg-border sm:block" />
             <div className="hidden text-right md:block">
               <p className="text-xs font-semibold text-foreground">Admin</p>
               <p className="max-w-48 truncate text-[11px] text-muted-foreground">
@@ -51,7 +51,7 @@ export default async function AdminProtectedLayout({
               <button
                 type="submit"
                 aria-label="Sign out"
-                className="group flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
+                className="group flex cursor-pointer items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:bg-surface-hover hover:shadow-md active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
               >
                 <LogOut className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-accent" />
                 <span className="hidden sm:inline">Sign out</span>
