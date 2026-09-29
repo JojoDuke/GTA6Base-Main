@@ -7,6 +7,8 @@ import {
   type ChangeEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
+import type { JSONContent } from "@tiptap/core";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import {
   Bold,
@@ -17,6 +19,8 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
+  Maximize2,
+  PictureInPicture2,
   Unlink,
 } from "lucide-react";
 import { uploadInlineImage } from "@/app/admin/(protected)/articles/actions";
@@ -94,10 +98,14 @@ function Toolbar({
   editor,
   uploading,
   onPickImage,
+  poppedOut,
+  onTogglePopout,
 }: {
   editor: Editor;
   uploading: boolean;
   onPickImage: () => void;
+  poppedOut: boolean;
+  onTogglePopout: () => void;
 }) {
   const [linkOpen, setLinkOpen] = useState(false);
   const [url, setUrl] = useState("");
@@ -186,6 +194,21 @@ function Toolbar({
       >
         <ImageIcon className="h-3.5 w-3.5" />
       </ToolbarButton>
+      <span className="flex-1" />
+      <ToolbarButton
+        label={
+          poppedOut
+            ? "Enlarge: put the editor back in the page"
+            : "Pop the editor out into a floating window"
+        }
+        onClick={onTogglePopout}
+      >
+        {poppedOut ? (
+          <Maximize2 className="h-3.5 w-3.5" />
+        ) : (
+          <PictureInPicture2 className="h-3.5 w-3.5" />
+        )}
+      </ToolbarButton>
       </div>
       {linkOpen ? (
         <div className="flex items-center gap-2 border-t border-border bg-card px-2 py-2">
@@ -248,31 +271,85 @@ function formatCount(value: number, singular: string, plural: string) {
   return `${value.toLocaleString("en-US")} ${value === 1 ? singular : plural}`;
 }
 
-export function RichTextEditor({
-  name = "body",
-  initialContent,
+function toDocument(raw: string): JSONContent {
+  try {
+    return normalizeBodyToDocument(JSON.parse(raw));
+  } catch {
+    return normalizeBodyToDocument(undefined);
+  }
+}
+
+type DocumentPictureInPicture = {
+  requestWindow: (options: { width: number; height: number }) => Promise<Window>;
+};
+
+const POPOUT_SIZE = { width: 640, height: 780 };
+
+// ProseMirror listens for selection changes on the window the editor was
+// created in. Once the editor's DOM lives in another window (the floating
+// editor), that listener has to follow it or arrow keys and clicks stop
+// updating the editor's selection.
+const boundDocuments = new WeakMap<Editor, Document>();
+
+function syncEditorDocument(editor: Editor) {
+  if (editor.isDestroyed) return;
+
+  const view = editor.view;
+  const current = view.dom.ownerDocument;
+  const bound = boundDocuments.get(editor) ?? window.document;
+
+  if (bound === current) return;
+
+  const observer = (
+    view as unknown as {
+      domObserver: {
+        onSelectionChange: EventListener;
+        start: () => void;
+        stop: () => void;
+      };
+    }
+  ).domObserver;
+
+  bound.removeEventListener("selectionchange", observer.onSelectionChange);
+  observer.stop();
+  observer.start();
+  view.updateRoot();
+  boundDocuments.set(editor, current);
+}
+
+function preparePopoutWindow(target: Window) {
+  const source = window.document;
+
+  source
+    .querySelectorAll('link[rel="stylesheet"], style')
+    .forEach((node) => target.document.head.appendChild(node.cloneNode(true)));
+  target.document.documentElement.className = source.documentElement.className;
+  target.document.title = "Story body · GTA6Base editor";
+  target.document.body.style.margin = "0";
+}
+
+function EditorSurface({
+  seed,
+  poppedOut,
+  onChange,
+  onTogglePopout,
 }: {
-  name?: string;
-  initialContent?: unknown;
+  seed: JSONContent;
+  poppedOut: boolean;
+  onChange: (json: string) => void;
+  onTogglePopout: () => void;
 }) {
-  const document = normalizeBodyToDocument(initialContent);
-  const [json, setJson] = useState(() => JSON.stringify(document));
-  const [mounted, setMounted] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const imageInput = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: true,
     extensions: richTextExtensions,
-    content: document,
+    content: seed,
     onUpdate: ({ editor: nextEditor }) => {
-      setJson(JSON.stringify(nextEditor.getJSON()));
+      onChange(JSON.stringify(nextEditor.getJSON()));
     },
     editorProps: {
       attributes: {
@@ -282,7 +359,13 @@ export function RichTextEditor({
     },
   });
 
-  const editorReady = mounted && Boolean(editor);
+  useEffect(() => {
+    if (!editor) return;
+
+    syncEditorDocument(editor);
+    if (poppedOut) editor.commands.focus("end");
+  }, [editor, poppedOut]);
+
   const { words, characters } = countBodyText(
     editor?.getText({ blockSeparator: "\n" }) ?? "",
   );
@@ -322,9 +405,12 @@ export function RichTextEditor({
     }
   }
 
+  const boxClass = poppedOut
+    ? "article-editor flex min-h-0 flex-1 flex-col overflow-hidden bg-card"
+    : "article-editor overflow-hidden rounded-2xl border border-border bg-muted transition-colors hover:border-border-strong focus-within:border-primary focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/10";
+
   return (
-    <div>
-      <input type="hidden" name={name} value={json} />
+    <div className={poppedOut ? "flex h-full min-h-0 flex-1 flex-col" : undefined}>
       <input
         ref={imageInput}
         type="file"
@@ -332,30 +418,214 @@ export function RichTextEditor({
         className="sr-only"
         onChange={handleImageSelected}
       />
-      <div className="article-editor overflow-hidden rounded-2xl border border-border bg-muted transition-colors hover:border-border-strong focus-within:border-primary focus-within:bg-card focus-within:ring-4 focus-within:ring-primary/10">
-        {editorReady && editor ? (
+      <div className={boxClass}>
+        {editor ? (
           <Toolbar
             editor={editor}
             uploading={uploading}
             onPickImage={() => imageInput.current?.click()}
+            poppedOut={poppedOut}
+            onTogglePopout={onTogglePopout}
           />
         ) : (
-          <div className="h-11 border-b border-border" />
+          <div className="h-11 shrink-0 border-b border-border" />
         )}
-        {editorReady && editor ? (
-          <EditorContent editor={editor} />
-        ) : (
-          <div className="min-h-[22rem] px-4 py-4 text-sm text-muted-foreground">
-            Loading editor…
-          </div>
-        )}
-        <p className="border-t border-border px-3 py-1.5 text-left text-xs tabular-nums text-muted-foreground">
+        <div
+          className={
+            poppedOut
+              ? "min-h-0 flex-1 overflow-y-auto [&>div]:min-h-full [&_.article-editor-content]:min-h-full"
+              : undefined
+          }
+        >
+          {editor ? (
+            <EditorContent editor={editor} />
+          ) : (
+            <div className="min-h-[22rem] px-4 py-4 text-sm text-muted-foreground">
+              Loading editor…
+            </div>
+          )}
+        </div>
+        <p className="shrink-0 border-t border-border px-3 py-1.5 text-left text-xs tabular-nums text-muted-foreground">
           {formatCount(words, "word", "words")} ·{" "}
           {formatCount(characters, "character", "characters")}
         </p>
       </div>
       {uploadError ? (
-        <p className="mt-1.5 text-xs font-medium text-accent">{uploadError}</p>
+        <p className="mt-1.5 shrink-0 px-3 text-xs font-medium text-accent">
+          {uploadError}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function PoppedOutNotice({ onReturn }: { onReturn: () => void }) {
+  return (
+    <div className="flex min-h-[16rem] flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-primary/30 bg-primary/[0.04] px-6 py-10 text-center">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/15 text-primary ring-1 ring-primary/25">
+        <PictureInPicture2 className="h-5 w-5" />
+      </span>
+      <p className="text-sm font-bold text-foreground">
+        The editor is floating in its own window
+      </p>
+      <p className="max-w-sm text-xs leading-5 text-muted-foreground">
+        Keep writing there while you research in other tabs or programs. It
+        closes if this page or the browser closes.
+      </p>
+      <button
+        type="button"
+        onClick={onReturn}
+        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-white shadow-[0_8px_30px_rgb(46_163_255_/_0.3)] transition-colors hover:bg-primary-hover"
+      >
+        <Maximize2 className="h-4 w-4" />
+        Bring it back
+      </button>
+    </div>
+  );
+}
+
+export function RichTextEditor({
+  name = "body",
+  initialContent,
+}: {
+  name?: string;
+  initialContent?: unknown;
+}) {
+  const initialDocument = normalizeBodyToDocument(initialContent);
+  const [json, setJson] = useState(() => JSON.stringify(initialDocument));
+  const [seed, setSeed] = useState<JSONContent>(initialDocument);
+  const [popoutWindow, setPopoutWindow] = useState<Window | null>(null);
+  const [popoutTheme, setPopoutTheme] = useState("light");
+  const [popoutError, setPopoutError] = useState<string | null>(null);
+  const latestJson = useRef(json);
+  const wrapper = useRef<HTMLDivElement>(null);
+
+  function handleChange(next: string) {
+    latestJson.current = next;
+    setJson(next);
+  }
+
+  // Close the floating window with the page: covers navigation, saving, and
+  // (for the pop-up fallback) closing the browser.
+  useEffect(() => {
+    if (!popoutWindow) return;
+
+    const close = () => popoutWindow.close();
+    window.addEventListener("pagehide", close);
+
+    return () => {
+      window.removeEventListener("pagehide", close);
+      popoutWindow.close();
+    };
+  }, [popoutWindow]);
+
+  // Keep the floating window in step with the light/dark toggle.
+  useEffect(() => {
+    if (!popoutWindow) return;
+
+    const host = wrapper.current?.closest(".admin-theme");
+    if (!host) return;
+
+    const observer = new MutationObserver(() => {
+      setPopoutTheme(host.getAttribute("data-theme") ?? "light");
+    });
+    observer.observe(host, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    return () => observer.disconnect();
+  }, [popoutWindow]);
+
+  function returnToPage() {
+    setSeed(toDocument(latestJson.current));
+    setPopoutWindow(null);
+    window.focus();
+  }
+
+  async function popOut() {
+    setPopoutError(null);
+
+    const api = (
+      window as unknown as { documentPictureInPicture?: DocumentPictureInPicture }
+    ).documentPictureInPicture;
+
+    let target: Window | null = null;
+
+    if (api) {
+      try {
+        target = await api.requestWindow(POPOUT_SIZE);
+      } catch {
+        target = null;
+      }
+    }
+
+    // Browsers without Picture-in-Picture for documents get a regular
+    // pop-up window instead.
+    target ??= window.open(
+      "",
+      "gta6base-editor",
+      `popup=yes,width=${POPOUT_SIZE.width},height=${POPOUT_SIZE.height}`,
+    );
+
+    if (!target) {
+      setPopoutError(
+        "Your browser blocked the floating window. Allow pop-ups for this site and try again.",
+      );
+      return;
+    }
+
+    preparePopoutWindow(target);
+
+    const opened = target;
+    // Fires for the built-in "back to tab" button, the window's close button,
+    // and returnToPage(): the editor always lands back in the page.
+    opened.addEventListener("pagehide", () => {
+      setSeed(toDocument(latestJson.current));
+      setPopoutWindow((current) => (current === opened ? null : current));
+    });
+
+    setSeed(toDocument(latestJson.current));
+    setPopoutTheme(
+      wrapper.current?.closest(".admin-theme")?.getAttribute("data-theme") ??
+        "light",
+    );
+    setPopoutWindow(opened);
+  }
+
+  return (
+    <div ref={wrapper}>
+      <input type="hidden" name={name} value={json} />
+      {popoutWindow ? (
+        <>
+          <PoppedOutNotice onReturn={returnToPage} />
+          {createPortal(
+            <div
+              className="admin-theme flex h-screen flex-col"
+              data-theme={popoutTheme}
+            >
+              <EditorSurface
+                key="popout"
+                seed={seed}
+                poppedOut
+                onChange={handleChange}
+                onTogglePopout={returnToPage}
+              />
+            </div>,
+            popoutWindow.document.body,
+          )}
+        </>
+      ) : (
+        <EditorSurface
+          key="inline"
+          seed={seed}
+          poppedOut={false}
+          onChange={handleChange}
+          onTogglePopout={popOut}
+        />
+      )}
+      {popoutError ? (
+        <p className="mt-1.5 text-xs font-medium text-accent">{popoutError}</p>
       ) : null}
     </div>
   );
