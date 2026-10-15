@@ -33,6 +33,13 @@ function databaseError(message: string): ArticleFormState {
     return { fieldErrors: { slug: ["That slug is already in use."] } };
   }
 
+  if (message.includes("image_focus")) {
+    return {
+      error:
+        "Image positioning is not set up in the database yet. Run the image focus migration in Supabase, then save again.",
+    };
+  }
+
   return { error: "Could not save the article. Please try again." };
 }
 
@@ -125,6 +132,8 @@ async function saveArticleInner(
     body: formData.get("body"),
     imageAlt: formData.get("imageAlt"),
     imageCredit: formData.get("imageCredit"),
+    imageFocusX: formData.get("imageFocusX"),
+    imageFocusY: formData.get("imageFocusY"),
     publishedAt: formData.get("publishedAt"),
   });
 
@@ -223,6 +232,8 @@ async function saveArticleInner(
     image_path: nextImagePath,
     image_alt: nextImagePath ? values.imageAlt : "",
     image_credit: nextImagePath ? values.imageCredit : "",
+    image_focus_x: nextImagePath ? values.imageFocusX : 50,
+    image_focus_y: nextImagePath ? values.imageFocusY : 0,
     status,
     published_at: values.publishedAt
       ? `${values.publishedAt}T12:00:00.000Z`

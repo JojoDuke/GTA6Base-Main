@@ -4,16 +4,18 @@ import type { Article, Entity } from "@/lib/data";
 function MediaBlock({
   image,
   alt,
+  position,
   className,
 }: {
   image: string;
   alt: string;
+  position?: string;
   className?: string;
 }) {
   return (
     <div
       className={className}
-      style={{ backgroundImage: image }}
+      style={{ backgroundImage: image, backgroundPosition: position }}
       role="img"
       aria-label={alt}
     />
@@ -29,7 +31,8 @@ export function ArticleCard({ article }: { article: Article }) {
       <MediaBlock
         image={article.image}
         alt={article.imageAlt}
-        className="h-[148px] w-full shrink-0 origin-top bg-cover bg-top transition-transform duration-500 group-hover:scale-[1.03]"
+        position={article.imagePosition ?? "50% 0%"}
+        className="h-[148px] w-full shrink-0 origin-center bg-cover transition-transform duration-500 group-hover:scale-[1.03]"
       />
       <div className="flex flex-1 flex-col gap-2 p-3 pt-3.5">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

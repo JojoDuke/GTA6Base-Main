@@ -39,8 +39,11 @@ export function FeaturedHero({ slides }: { slides: Article[] }) {
           aria-label={`Read ${item.title}`}
         >
           <div
-            className="absolute inset-0 origin-top bg-cover bg-top transition-transform duration-500 group-hover:scale-[1.02]"
-            style={{ backgroundImage: item.image }}
+            className="absolute inset-0 origin-center bg-cover transition-transform duration-500 group-hover:scale-[1.02]"
+            style={{
+              backgroundImage: item.image,
+              backgroundPosition: item.imagePosition ?? "50% 0%",
+            }}
             aria-hidden
           />
 

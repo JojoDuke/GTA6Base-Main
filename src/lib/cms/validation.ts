@@ -34,6 +34,16 @@ export const articleFormSchema = z.object({
   body: z.string().min(1, "Add article content."),
   imageAlt: z.string().trim().max(180),
   imageCredit: z.string().trim().max(180),
+  imageFocusX: z.coerce
+    .number()
+    .int()
+    .min(0, "Image position is out of range.")
+    .max(100, "Image position is out of range."),
+  imageFocusY: z.coerce
+    .number()
+    .int()
+    .min(0, "Image position is out of range.")
+    .max(100, "Image position is out of range."),
   publishedAt: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Choose a valid publication date.")

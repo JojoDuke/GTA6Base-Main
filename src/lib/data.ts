@@ -15,6 +15,7 @@ export type Article = {
   image: string;
   imageAlt: string;
   imageCredit?: string;
+  imagePosition?: string;
   tag?: string;
   body?: ArticleBody;
 };

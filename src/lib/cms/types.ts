@@ -14,6 +14,8 @@ export type ArticleRow = {
   image_path: string | null;
   image_alt: string;
   image_credit: string;
+  image_focus_x?: number | null;
+  image_focus_y?: number | null;
   status: ArticleStatus;
   published_at: string | null;
   featured_order: number | null;
@@ -34,6 +36,8 @@ export type ArticleFormState = {
       | "image"
       | "imageAlt"
       | "imageCredit"
+      | "imageFocusX"
+      | "imageFocusY"
       | "publishedAt",
       string[]
     >

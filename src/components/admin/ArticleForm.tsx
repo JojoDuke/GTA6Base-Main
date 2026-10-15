@@ -18,6 +18,8 @@ import {
 } from "@/app/admin/(protected)/articles/actions";
 import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import {
+  clampImageFocus,
+  DEFAULT_IMAGE_FOCUS,
   getArticleImageUrl,
   MAX_ARTICLE_IMAGE_BYTES,
   MAX_ARTICLE_IMAGE_LABEL,
@@ -66,6 +68,17 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
   );
   const [removeImage, setRemoveImage] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
+  const [imageFocus, setImageFocus] = useState({
+    x: clampImageFocus(article?.image_focus_x, DEFAULT_IMAGE_FOCUS.x),
+    y: clampImageFocus(article?.image_focus_y, DEFAULT_IMAGE_FOCUS.y),
+  });
+  const [draggingImage, setDraggingImage] = useState(false);
+  const imageDrag = useRef<{
+    pointerX: number;
+    pointerY: number;
+    x: number;
+    y: number;
+  } | null>(null);
   const imageInput = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -114,6 +127,8 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
         name="removeImage"
         value={removeImage ? "true" : "false"}
       />
+      <input type="hidden" name="imageFocusX" value={imageFocus.x} />
+      <input type="hidden" name="imageFocusY" value={imageFocus.y} />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
         <div className="space-y-6">
@@ -237,7 +252,8 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                   Featured image
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  JPEG, PNG, WebP, or AVIF up to {MAX_ARTICLE_IMAGE_LABEL}.
+                  JPEG, PNG, WebP, or AVIF up to {MAX_ARTICLE_IMAGE_LABEL}. Drag
+                  the preview to choose what stays in frame.
                 </p>
               </div>
             </div>
@@ -264,6 +280,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                 setImageError(null);
                 setSelectedImage(file);
                 setRemoveImage(false);
+                setImageFocus(DEFAULT_IMAGE_FOCUS);
                 setImagePreview(file ? URL.createObjectURL(file) : null);
               }}
             />
@@ -271,12 +288,80 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
             {imagePreview ? (
               <div className="mt-6">
                 <div
-                  role="img"
-                  aria-label="Featured image preview"
-                  className="group relative aspect-video overflow-hidden rounded-2xl bg-muted bg-cover bg-center"
-                  style={{ backgroundImage: `url("${imagePreview}")` }}
+                  role="application"
+                  aria-label="Featured image crop. Drag to reposition, or use the arrow keys."
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    const step = event.shiftKey ? 10 : 2;
+                    const next = { ...imageFocus };
+
+                    if (event.key === "ArrowLeft") next.x -= step;
+                    else if (event.key === "ArrowRight") next.x += step;
+                    else if (event.key === "ArrowUp") next.y -= step;
+                    else if (event.key === "ArrowDown") next.y += step;
+                    else return;
+
+                    event.preventDefault();
+                    setImageFocus({
+                      x: clampImageFocus(next.x, imageFocus.x),
+                      y: clampImageFocus(next.y, imageFocus.y),
+                    });
+                  }}
+                  onPointerDown={(event) => {
+                    if ((event.target as HTMLElement).closest("button, label")) {
+                      return;
+                    }
+
+                    imageDrag.current = {
+                      pointerX: event.clientX,
+                      pointerY: event.clientY,
+                      x: imageFocus.x,
+                      y: imageFocus.y,
+                    };
+                    setDraggingImage(true);
+                    try {
+                      event.currentTarget.setPointerCapture(event.pointerId);
+                    } catch {
+                      // The drag still tracks from pointermove if capture is unavailable.
+                    }
+                  }}
+                  onPointerMove={(event) => {
+                    const drag = imageDrag.current;
+                    if (!drag) return;
+
+                    const rect = event.currentTarget.getBoundingClientRect();
+                    setImageFocus({
+                      x: clampImageFocus(
+                        drag.x -
+                          ((event.clientX - drag.pointerX) / rect.width) * 100,
+                        drag.x,
+                      ),
+                      y: clampImageFocus(
+                        drag.y -
+                          ((event.clientY - drag.pointerY) / rect.height) * 100,
+                        drag.y,
+                      ),
+                    });
+                  }}
+                  onPointerUp={() => {
+                    imageDrag.current = null;
+                    setDraggingImage(false);
+                  }}
+                  onPointerCancel={() => {
+                    imageDrag.current = null;
+                    setDraggingImage(false);
+                  }}
+                  className={`group relative aspect-video touch-none overflow-hidden rounded-2xl bg-muted bg-cover outline-none focus-visible:ring-4 focus-visible:ring-primary/30 ${
+                    draggingImage ? "cursor-grabbing" : "cursor-grab"
+                  }`}
+                  style={{
+                    backgroundImage: `url("${imagePreview}")`,
+                    backgroundPosition: `${imageFocus.x}% ${imageFocus.y}%`,
+                  }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10 opacity-80 transition-opacity group-hover:opacity-100" />
+                  <p className="pointer-events-none absolute left-3 top-3 rounded-lg bg-black/55 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+                    Drag to reposition
+                  </p>
                   <button
                     type="button"
                     aria-label="Remove featured image"
@@ -284,6 +369,7 @@ export function ArticleForm({ article }: { article?: ArticleRow }) {
                       setSelectedImage(null);
                       setImagePreview(null);
                       setRemoveImage(true);
+                      setImageFocus(DEFAULT_IMAGE_FOCUS);
                       if (imageInput.current) imageInput.current.value = "";
                     }}
                     className="absolute right-3 top-3 flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl bg-black/50 text-white backdrop-blur transition-colors hover:bg-accent"

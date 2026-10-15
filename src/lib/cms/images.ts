@@ -22,6 +22,23 @@ export function getArticleImageUrl(path: string | null) {
   return `${baseUrl}/storage/v1/object/public/${ARTICLE_IMAGE_BUCKET}/${encodedPath}`;
 }
 
+export const DEFAULT_IMAGE_FOCUS = { x: 50, y: 0 };
+
+export function clampImageFocus(value: unknown, fallback: number) {
+  const number = typeof value === "number" ? value : Number(value);
+
+  if (!Number.isFinite(number)) return fallback;
+
+  return Math.min(100, Math.max(0, Math.round(number)));
+}
+
+export function imageFocusPosition(
+  x?: number | null,
+  y?: number | null,
+) {
+  return `${clampImageFocus(x, DEFAULT_IMAGE_FOCUS.x)}% ${clampImageFocus(y, DEFAULT_IMAGE_FOCUS.y)}%`;
+}
+
 export const DEFAULT_IMAGE_CREDIT = "Image credit: Rockstar Games";
 
 export function formatImageCredit(credit?: string | null) {

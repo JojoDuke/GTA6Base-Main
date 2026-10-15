@@ -5,7 +5,7 @@ import {
   getArticleBySlug as getStaticArticleBySlug,
   getNewsArticles as getStaticNewsArticles,
 } from "@/lib/data";
-import { getArticleImageUrl } from "@/lib/cms/images";
+import { getArticleImageUrl, imageFocusPosition } from "@/lib/cms/images";
 import { normalizeArticleBody } from "@/lib/cms/rich-text";
 import type { ArticleRow } from "@/lib/cms/types";
 import { createPublicClient } from "@/lib/supabase/public";
@@ -42,6 +42,7 @@ export function mapArticleRow(row: ArticleRow): Article {
     image: imageUrl ? `url("${imageUrl}")` : FALLBACK_IMAGE,
     imageAlt: row.image_alt || row.title,
     imageCredit: row.image_credit || undefined,
+    imagePosition: imageFocusPosition(row.image_focus_x, row.image_focus_y),
     tag: row.tag || undefined,
     body: normalizeArticleBody(row.body),
   };
